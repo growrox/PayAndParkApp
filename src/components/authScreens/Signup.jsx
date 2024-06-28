@@ -1,0 +1,144 @@
+import React, { useCallback, useState } from 'react';
+import { Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
+import MainComponent from './MainComponent';
+import { useNavigation } from '@react-navigation/native';
+import { useToast } from 'react-native-toast-notifications';
+
+const Signup = () => {
+  const navigation = useNavigation();
+  const [signupData, setSignupData] = useState({
+    name: '',
+    phoneNo: '',
+    supervisorCode: ''
+  })
+  const toast = useToast()
+
+  const handleSignupPress = useCallback(async () => {
+    // navigation.navigate('Signup');
+
+    if (!signupData.name || !signupData.phoneNo || !signupData.supervisorCode) toast.show('Please enter all the fields correctly!', { type: 'warning' })
+
+    console.log('hit signup', signupData);
+    try {
+      console.log('clicked login ');
+      const response = await fetch('https://payandparkserver.onrender.com/api/v1/sign-up', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+        },
+        body: JSON.stringify(signupData),
+      });
+
+      const data = await response.json();
+      console.log('data of response.......', data);
+
+      switch (response.status) {
+        case 400:
+        case 300:
+          toast.show(data.message, { type: 'warning', placement: 'top' });
+          break;
+        case 200:
+          toast.show(data.message, { type: 'success', placement: 'top' });
+          navigation.navigate('VerifyOTP', { phoneNo: signupData.phoneNo, otpFromResponse: data.OTP });
+          break;
+        default:
+          console.log('default response.status:', response.status);
+          toast.show(data.message, { placement: 'top' })
+      }
+
+    } catch (error) {
+      console.log('Error occurred while signup', error);
+      toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+    }
+
+  }, [signupData])
+
+
+  const handleInputChange = useCallback((event, type) => {
+    const { text } = event.nativeEvent;
+
+    console.log('text, type', text, '   ', type);
+    setSignupData((prev) => ({
+      ...prev,
+      [type]: text
+    }))
+  }, [])
+
+  return (
+    <MainComponent
+      Title="Create Account"
+      Description="Here there will be a slogan is there is"
+    >
+      <View style={styles.container}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Enter Your Name"
+            placeholderTextColor="grey"
+            value={signupData.name}
+            onChange={(v) => handleInputChange(v, 'name')}
+            style={styles.textInput}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Enter Phone Number"
+            value={signupData.phoneNo}
+            onChange={(v) => handleInputChange(v, 'phoneNo')}
+            placeholderTextColor="grey"
+            style={styles.textInput}
+            keyboardType='numeric'
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Enter Supervisor Code"
+            placeholderTextColor="grey"
+            value={signupData.supervisorCode}
+            onChange={(v) => handleInputChange(v, 'supervisorCode')}
+            style={styles.textInput}
+          />
+        </View>
+        <TouchableOpacity
+          onPress={handleSignupPress}
+          style={styles.signUpButton}
+        >
+          <Text style={styles.signUpButtonText}>SIGN UP</Text>
+        </TouchableOpacity>
+
+      </View>
+    </MainComponent>
+  );
+};
+
+export default React.memo(Signup);
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    width: 320,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  textInput: {
+    color: 'grey',
+    padding: 7,
+  },
+  signUpButton: {
+    backgroundColor: '#213C83',
+    paddingVertical: 6,
+    paddingHorizontal: 48,
+    width: 320,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  signUpButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingBottom: 4,
+  },
+});

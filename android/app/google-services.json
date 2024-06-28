@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161020609932",
+    "project_id": "payandpark-6a7ec",
+    "storage_bucket": "payandpark-6a7ec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161020609932:android:863fd86bef42636b20c2a9",
+        "android_client_info": {
+          "package_name": "com.payandpark"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIpBBwaHzn2dDcZNrrz5eoyPL2dG_bRA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

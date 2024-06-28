@@ -1,0 +1,13 @@
+ **different status code for response**
+
+    // 500 error
+    // 400/300 warning
+    // 200 success
+    // 406 token invalidate
+    // 401 token missing
+
+ **api  instructions**
+ 
+ 1) need to send userid with all the validated request (not login and signup api) 
+ 2) need to send x-client-source with non validated request (login and signup api)
+ 3) need to send a authorization > Bearer token with all the validated request
