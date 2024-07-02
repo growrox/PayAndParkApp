@@ -1,0 +1,31 @@
+ **different status code for response**
+
+    // 500 error
+    // 400/300 warning
+    // 200 success
+    // 406 token invalidate
+    // 401 token missing
+
+ **api  instructions**
+ 
+ 1) need to send userid with all the validated request (not login and signup api) 
+ 2) need to send x-client-source with non validated request (login and signup api)
+ 3) need to send a authorization > Bearer token with all the validated request
+
+
+ **login jun-29 response**
+ data of response....... {"message": "OTP validated successfully.", 
+ "name": "hasan", "role": "assistant", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgxNTRjY2Q1NGU3NmIzMjMyN2YxYzciLCJyb2xlIjoiYXNzaXN0YW50Iiwic291cmNlIjoiYXBwIiwiaWF0IjoxNzE5ODUwNDc4LCJleHAiOjE3MTk4OTM2Nzh9.gadlRwC5pVM1GlDqTLCV1f78qONkGp6HgnhPs8Gx1qg", 
+ "userId": "668154ccd54e76b32327f1c7"}
+
+
+
+
+   on online payment first need  to hit "generate payment" api
+   if response have order no. then need to generate a payment page through razorpay
+   if payments gets failed need to show a popup with two buttons 1)  cancel ticket => to redirect to home page 2) regenerate payment
+   
+   todays(jul-1) payload:
+   {"name": "hasan", "phoneNo": "7218074913", "roleid": "", 
+   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgxNTRjY2Q1NGU3NmIzMjMyN2YxYzciLCJyb2xlIjoiYXNzaXN0YW50Iiwic291cmNlIjoiYXBwIiwiaWF0IjoxNzE5ODUwNDc4LCJleHAiOjE3MTk4OTM2Nzh9.gadlRwC5pVM1GlDqTLCV1f78qONkGp6HgnhPs8Gx1qg", 
+   "userId": "668154ccd54e76b32327f1c7"}

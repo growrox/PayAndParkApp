@@ -2,12 +2,13 @@ import * as React from 'react';
 import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import DashboardHeader from '../dashboard/DashboardHeader';
 
-export default function VehicleType({ navigation }) {
+export default function VehicleType({ navigation, route }) {
 
+    const { vehicleTypes } = route.params;
 
-    const handleCardPress = (title) => {
-        console.log(`Selected vehicle type: ${title}`);
-        navigation.navigate('TimeSlot', { selectedVehicle: title })
+    const handleCardPress = (data) => {
+        console.log(`Selected vehicle type: ${data}`);
+        navigation.navigate('TimeSlot', { selectedVehicle: data })
     };
 
     return (
@@ -22,49 +23,23 @@ export default function VehicleType({ navigation }) {
                 </View>
 
                 <View style={styles.cardContainer}>
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('Bike')}
-                    >
-                        <Image
-                            source={require('../../utils/images/ticket/bike.png')}
-                            style={styles.cardIcon}
-                        />
-                        <Text style={styles.cardTitle}>Bike</Text>
-                    </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('Car')}
-                    >
-                        <Image
-                            source={require('../../utils/images/ticket/car.png')}
-                            style={styles.cardIcon}
-                        />
-                        <Text style={styles.cardTitle}>Car</Text>
-                    </TouchableOpacity>
+                    {vehicleTypes.map((_d, _i) => {
+                        return (
+                            <TouchableOpacity
+                                key={_d._id}
+                                style={styles.collectionCard}
+                                onPress={() => handleCardPress(_d)}
+                            >
+                                <Image
+                                    src={_d.image}
+                                    style={styles.cardIcon}
+                                />
+                                <Text style={styles.cardTitle}>{_d.name}</Text>
+                            </TouchableOpacity>
+                        )
+                    })}
 
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('Light Vehicle')}
-                    >
-                        <Image
-                            source={require('../../utils/images/ticket/truck.png')}
-                            style={styles.cardIcon}
-                        />
-                        <Text style={styles.cardTitle}>Light Vehicle</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('Heavy Vehicle')}
-                    >
-                        <Image
-                            source={require('../../utils/images/ticket/heavy-vehicle.png')}
-                            style={styles.cardIcon}
-                        />
-                        <Text style={styles.cardTitle}>Heavy Vehicle</Text>
-                    </TouchableOpacity>
                 </View>
             </ScrollView>
         </View>
@@ -102,7 +77,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     cardIcon: {
-        width: 80,
+        width: 100,
         height: 80,
         marginBottom: 8,
     },

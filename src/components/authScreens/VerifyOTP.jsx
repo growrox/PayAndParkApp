@@ -8,6 +8,7 @@ import {
     getHash, removeListener,
     startOtpListener,
 } from 'react-native-otp-verify';
+import { url } from '../../utils/url';
 
 const VerifyOTP = ({ navigation, route }) => {
     const { phoneNo, otpFromResponse } = route.params;
@@ -49,7 +50,7 @@ const VerifyOTP = ({ navigation, route }) => {
         }
         try {
 
-            const response = await fetch('https://payandparkserver.onrender.com/api/v1/verify-otp', {
+            const response = await fetch(`${url}/api/v1/verify-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,14 +72,15 @@ const VerifyOTP = ({ navigation, route }) => {
                     toast.show(data.message, { type: 'warning', placement: 'top' });
                     break;
                 case 200:
-                    toast.show('You are signed in successfully!', { type: 'success'});
+                    toast.show('You are signed in successfully!', { type: 'success' });
                     dispatch({
                         type: AUTH_LOG_IN_SUCCESS,
                         payload: {
                             token: data.token,
                             roleid: '',
                             name: data.name,
-                            phoneNo: phoneNo
+                            phoneNo: phoneNo,
+                            userId: data.userId
                         },
                     });
                     break;
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
     },
     textInput: {
         color: 'grey',
-        padding: 5,
+        padding: 10,
     },
     signInButton: {
         backgroundColor: '#213C83',

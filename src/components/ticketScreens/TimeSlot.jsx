@@ -9,9 +9,9 @@ export default function TimeSlot({ navigation, route }) {
         console.log('selectedVehicle', selectedVehicle);
     }, [selectedVehicle])
 
-    const handleCardPress = (slot) => {
+    const handleCardPress = (slot, amount) => {
         console.log(`Selected time slot type: ${slot}`);
-        navigation.navigate('VehiclePaymentEntry', { selectedTimeSlot: slot, selectedVehicle })
+        navigation.navigate('VehiclePaymentEntry', { selectedTime: slot, selectedAmount: amount, selectedVehicle: selectedVehicle.name })
     };
 
     return (
@@ -26,36 +26,19 @@ export default function TimeSlot({ navigation, route }) {
                 </View>
 
                 <View style={styles.cardContainer}>
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('6 Hours')}
-                    >
-                        <Text style={styles.cardTitle}>6 Hours</Text>
-                        <Text style={styles.cardTitle}>18 Rs</Text>
-                    </TouchableOpacity>
+                    {selectedVehicle.hourlyPrices.map((_d, i) => {
+                        return (
+                            <TouchableOpacity
+                                key={_d._id}
+                                style={styles.collectionCard}
+                                onPress={() => handleCardPress(_d.hour, _d.price)}
+                            >
+                                <Text style={styles.cardTitle}>{_d.hour} Hours</Text>
+                                <Text style={styles.cardTitle}>{_d.price} Rs</Text>
+                            </TouchableOpacity>
+                        )
+                    })}
 
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('12 Hours')}
-                    >
-                        <Text style={styles.cardTitle}>12 Hours</Text>
-                        <Text style={styles.cardTitle}>30 Rs</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.collectionCard}
-                        onPress={() => handleCardPress('24 Hours')}
-                    >
-                        <Text style={styles.cardTitle}>24 Hours</Text>
-                        <Text style={styles.cardTitle}>129 Rs</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.collectionCard, { justifyContent: 'center' }]}
-                        onPress={() => handleCardPress('All Month Pass')}
-                    >
-                        <Text style={styles.cardTitle}>All Month Pass</Text>
-                    </TouchableOpacity>
                 </View>
             </ScrollView>
         </View>

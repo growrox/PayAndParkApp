@@ -1,7 +1,9 @@
 import {
     AUTH_LOG_OUT,
     AUTH_LOG_IN_SUCCESS,
-    AUTH_SIGN_UP_SUCCESS
+    AUTH_SIGN_UP_SUCCESS,
+    CREATE_TICKET,
+    ASSISTANT_CLOCK
 } from "./types";
 
 const authInitialState = {
@@ -10,7 +12,9 @@ const authInitialState = {
     token: "",
     roleid: "",
     phoneNo: "",
-
+    userId: "",
+    isTicketCreated: false,
+    isClockedIn: false
 };
 
 
@@ -26,7 +30,8 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 isAuthenticated: true,
                 token: payload.token,
                 roleid: payload.roleid,
-                phoneNo: payload.phoneNo
+                phoneNo: payload.phoneNo,
+                userId: payload.userId
             };
         }
         case AUTH_LOG_IN_SUCCESS: {
@@ -36,7 +41,8 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 isAuthenticated: true,
                 token: payload.token,
                 roleid: payload.roleid,
-                phoneNo: payload.phoneNo
+                phoneNo: payload.phoneNo,
+                userId: payload.userId
             };
         }
         case AUTH_LOG_OUT: {
@@ -46,8 +52,21 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 token: "",
                 location: "",
                 roleid: "",
-                phoneNo: ""
+                phoneNo: "",
+                userId: ""
 
+            };
+        }
+        case CREATE_TICKET: {
+            return {
+                ...state,
+                isTicketCreated: payload.isTicketCreated,
+            };
+        }
+        case ASSISTANT_CLOCK: {
+            return {
+                ...state,
+                isClockedIn: payload.isClockedIn,
             };
         }
 

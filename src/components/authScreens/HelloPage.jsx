@@ -9,17 +9,18 @@ const HelloPage = React.memo(() => {
   const navigation = useNavigation();
   const dispatch = useDispatch()
 
-  useEffect(() => {
-    dispatch({
-      type: AUTH_LOG_IN_SUCCESS,
-      payload: {
-        token: '',
-        roleid: '',
-        name: '',
-        phoneNo: ''
-      },
-    });
-  }, [])
+  // useEffect(() => {
+  //   dispatch({
+  //     type: AUTH_LOG_IN_SUCCESS,
+  //     payload: {
+  //       token: '',
+  //       roleid: '',
+  //       name: '',
+  //       phoneNo: '',
+  //       userId: ''
+  //     },
+  //   });
+  // }, [])
 
   return (
     <MainComponent

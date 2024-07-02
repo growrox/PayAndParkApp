@@ -1,23 +1,26 @@
 import * as React from 'react';
 import { Text, View, TouchableWithoutFeedback, StyleSheet, Image, Modal, TouchableOpacity } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import ProfileModal from '../profile/ProfileModal';
 import { useNavigation } from '@react-navigation/native';
 
 export default function DashboardHeader({ headerText, secondaryHeaderText }) {
     const navigation = useNavigation()
-    const dispatch = useDispatch();
     const [modalVisible, setModalVisible] = React.useState(false);
+    const { isClockedIn } = useSelector(state => state.auth)
+
 
     const handleLogoPress = () => {
         navigation.navigate('Home');
-
     };
+
+    React.useEffect(() => {
+        console.log('isClockedIn from dashboard', isClockedIn);
+    }, [isClockedIn])
 
     const handleProfilePress = () => {
         console.log('Profile pressed');
         setModalVisible(true);
-
     };
 
     return (
@@ -28,19 +31,18 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
                     style={styles.logo}
                 />
             </TouchableWithoutFeedback>
-            {/* <View style={styles.textContainer}>
-                <Text style={styles.headerText}>{headerText}</Text>
-                <Text style={styles.secondaryHeaderText}>{secondaryHeaderText}</Text>
-            </View> */}
+
             <TouchableWithoutFeedback onPress={handleProfilePress}>
-                <Image
-                    source={require('../../utils/images/profile-icon.png')}
-                    style={styles.profileLogo}
-                />
+                <View style={styles.profileContainer}>
+                    <Image
+                        source={require('../../utils/images/profile-icon.png')}
+                        style={styles.profileLogo}
+                    />
+                    <View style={{ ...styles.greenIndicator, backgroundColor: isClockedIn ? 'green' : '#CB2027' }} />
+                </View>
             </TouchableWithoutFeedback>
 
             <ProfileModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
-
         </View>
     );
 }
@@ -62,6 +64,19 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         resizeMode: 'contain',
+    },
+    profileContainer: {
+        position: 'relative',
+    },
+    greenIndicator: {
+        position: 'absolute',
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        right: -3,
+        top: -2.3,
     },
     textContainer: {
         alignItems: 'center',

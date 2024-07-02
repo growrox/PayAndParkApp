@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-nativ
 import MainComponent from './MainComponent';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
+import { url } from '../../utils/url';
 
 const Signup = () => {
   const navigation = useNavigation();
@@ -18,16 +19,22 @@ const Signup = () => {
 
     if (!signupData.name || !signupData.phoneNo || !signupData.supervisorCode) toast.show('Please enter all the fields correctly!', { type: 'warning' })
 
+    const apiData = {
+      name: signupData.name,
+      phone: signupData.phoneNo,
+      supervisorCode: signupData.supervisorCode
+    }
+
     console.log('hit signup', signupData);
     try {
       console.log('clicked login ');
-      const response = await fetch('https://payandparkserver.onrender.com/api/v1/sign-up', {
+      const response = await fetch(`${url}/api/v1/sign-up`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
         },
-        body: JSON.stringify(signupData),
+        body: JSON.stringify(apiData),
       });
 
       const data = await response.json();
@@ -123,7 +130,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     color: 'grey',
-    padding: 7,
+    padding: 10,
   },
   signUpButton: {
     backgroundColor: '#213C83',

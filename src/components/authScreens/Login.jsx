@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-nativ
 import MainComponent from './MainComponent';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from "react-native-toast-notifications";
+import { url } from '../../utils/url';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -15,8 +16,8 @@ const Login = () => {
     }
 
     try {
-      console.log('clicked login ');
-      const response = await fetch('https://payandparkserver.onrender.com/api/v1/login', {
+      console.log('clicked login phoneNo', phoneNo);
+      const response = await fetch(`${url}/api/v1/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,14 +99,14 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     width: 320,
     borderRadius: 8,
     marginBottom: 16,
   },
   textInput: {
     color: 'grey',
-    padding: 7,
+    padding: 10,
   },
   signInButton: {
     backgroundColor: '#213C83',
