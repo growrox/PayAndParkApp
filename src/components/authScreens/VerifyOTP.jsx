@@ -80,7 +80,8 @@ const VerifyOTP = ({ navigation, route }) => {
                             roleid: '',
                             name: data.name,
                             phoneNo: phoneNo,
-                            userId: data.userId
+                            userId: data.userId,
+                            name: data.name
                         },
                     });
                     break;

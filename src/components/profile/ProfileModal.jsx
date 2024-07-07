@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Image } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { AUTH_LOG_OUT } from '../../redux/types';
+import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
 
 
 const ProfileModal = ({ modalVisible, setModalVisible }) => {
-    const { isClockedIn, userId, token } = useSelector(state => state.auth)
+    const { isClockedIn, userId, token, phoneNo, name } = useSelector(state => state.auth)
     const [isLoading, setLoading] = React.useState(false)
     const toast = useToast();
     const dispatch = useDispatch();
@@ -51,7 +51,8 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                         location: "",
                         roleid: "",
                         phoneNo: "",
-                        userId: ""
+                        userId: "",
+                        name: ""
                     }
                 });
             } else {
@@ -74,7 +75,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
         try {
 
             const response = await fetch(`${url}/api/v1/attendance/clock-out/${userId}`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
@@ -100,7 +101,8 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                         location: "",
                         roleid: "",
                         phoneNo: "",
-                        userId: ""
+                        userId: "",
+                        name: ""
                     }
                 });
             } else {
@@ -127,7 +129,8 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                 location: "",
                 roleid: "",
                 phoneNo: "",
-                userId: ""
+                userId: "",
+                name: ""
             },
         });
         toast.show('You are logged out successfully!', { type: 'warning' });
@@ -169,13 +172,13 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
 
                             <View style={styles.horizontalLine} />
 
-                            <Text style={styles.profileName}>Hitesh Pal</Text>
+                            <Text style={styles.profileName}>{name}</Text>
                             <View style={styles.phoneNumberContainer}>
                                 <Image
                                     source={require('../../utils/images/homeAssistant/telephone.png')}
                                     style={styles.phoneIcon}
                                 />
-                                <Text style={styles.phoneNumber}>0987654321</Text>
+                                <Text style={styles.phoneNumber}>{phoneNo}</Text>
                             </View>
 
                             <View style={styles.buttonContainer}>

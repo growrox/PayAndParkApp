@@ -29,3 +29,8 @@
    {"name": "hasan", "phoneNo": "7218074913", "roleid": "", 
    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgxNTRjY2Q1NGU3NmIzMjMyN2YxYzciLCJyb2xlIjoiYXNzaXN0YW50Iiwic291cmNlIjoiYXBwIiwiaWF0IjoxNzE5ODUwNDc4LCJleHAiOjE3MTk4OTM2Nzh9.gadlRwC5pVM1GlDqTLCV1f78qONkGp6HgnhPs8Gx1qg", 
    "userId": "668154ccd54e76b32327f1c7"}
+
+
+   1) need to add a pass button ===> api ===>  {{URL}}/api/v1/vehicle-passes/7218074913
+
+   for home page ticket search query: vehicle number, ticket no, status , selectedMode

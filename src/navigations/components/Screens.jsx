@@ -9,6 +9,7 @@ import PaymentDetails from '../../components/ticketScreens/PaymentDetails';
 import VehicleType from '../../components/ticketScreens/VehicleType';
 import TimeSlot from '../../components/ticketScreens/TimeSlot';
 import VehiclePaymentEntry from '../../components/ticketScreens/VehiclePaymentEntry';
+import AllAssitantTickets from '../../components/dashboard/AllAssitantTickets';
 
 
 const Stack = createStackNavigator();
@@ -37,7 +38,12 @@ export default function Screens() {
         {
             screen: 'PaymentDetails',
             component: PaymentDetails
-        }
+        },
+        {
+            screen: 'AllAssitantTickets',
+            component: AllAssitantTickets
+        },
+
     ]
 
     useEffect(() => {

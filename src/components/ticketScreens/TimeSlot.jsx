@@ -11,6 +11,9 @@ export default function TimeSlot({ navigation, route }) {
 
     const handleCardPress = (slot, amount) => {
         console.log(`Selected time slot type: ${slot}`);
+        // if (slot === 'All Month Pass') {
+        //     return
+        // }
         navigation.navigate('VehiclePaymentEntry', { selectedTime: slot, selectedAmount: amount, selectedVehicle: selectedVehicle.name })
     };
 
@@ -38,6 +41,12 @@ export default function TimeSlot({ navigation, route }) {
                             </TouchableOpacity>
                         )
                     })}
+                    <TouchableOpacity
+                        style={{ ...styles.collectionCard, justifyContent: 'center' }}
+                        onPress={() => handleCardPress('All Month Pass', 0)}
+                    >
+                        <Text style={styles.cardTitle}>All Month Pass</Text>
+                    </TouchableOpacity>
 
                 </View>
             </ScrollView>

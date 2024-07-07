@@ -2,9 +2,12 @@ import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from "react-native-image-picker";
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
-
+import { url } from '../../../utils/url';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 export default function CameraCapture({ onCapture }) {
+    const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
 
 
 
@@ -26,32 +29,59 @@ export default function CameraCapture({ onCapture }) {
 
         if (permissionStatus === RESULTS.GRANTED) {
             // launchCamera = () => {
-                let options = {
-                    storageOptions: {
-                        skipBackup: true,
-                        path: 'images',
-                    },
-                };
-                ImagePicker.launchCamera(options, (response) => {
+            let options = {
+                storageOptions: {
+                    skipBackup: true,
+                    path: 'images',
+                },
+            };
+            ImagePicker.launchCamera(options, async (response) => {
 
-                    if (response.didCancel) {
-                        console.log('User cancelled image picker by pressing back button');
-                    } else if (response.error) {
-                        console.log('ImagePicker Error: ', response.error);
-                    } else if (response.customButton) {
-                        console.log('User selected custom button: ', response.customButton);
-                        Alert.alert(response.customButton);
-                    } else {
-                        const source = { uri: response.uri };
-                        console.log('response', JSON.stringify(response));
-                        onCapture(response.assets[0].uri);                       
-                        // this.setState({
-                        //     filePath: response,
-                        //     fileData: response.data,
-                        //     fileUri: response.uri
-                        // });
+                if (response.didCancel) {
+                    console.log('User cancelled image picker by pressing back button');
+                } else if (response.error) {
+                    console.log('ImagePicker Error: ', response.error);
+                } else if (response.customButton) {
+                    console.log('User selected custom button: ', response.customButton);
+                    Alert.alert(response.customButton);
+                } else {
+                    const source = { uri: response.uri };
+                    // console.log('image response...............', JSON.stringify(response));
+                    // console.log("response.assets[0].uri, response.assets[0].type, response.assets[0].fileName",response.assets[0].uri, "      ",response.assets[0].type, "     ",response.assets[0].fileName);
+                    // // this.setState({
+                    // //     filePath: response,
+                    // //     fileData: response.data,
+                    // //     fileUri: response.uri
+                    // // });
+
+                    try {
+                        // Upload the image using FormData
+                        const formData = new FormData();
+                        formData.append('image', {
+                            uri: response.assets[0].uri,
+                            type: response.assets[0].type,
+                            name: response.assets[0].fileName,
+                        });
+
+                        formData.append('assistantID', userId)
+                        console.log("url", url);
+                        const uploadResponse = await axios.post(`${url}/api/v1/parking-tickets/uploadParkingTicket`, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                                'userId': userId,
+                                'Authorization': `Bearer ${token}`
+                            },
+                        });
+
+                        console.log('Upload Response:', uploadResponse.data);
+                        onCapture(response.assets[0].uri, uploadResponse.data.path)
+                        // Handle success or update UI accordingly
+                    } catch (error) {
+                        console.error('Upload Error:', error);
+                        // Handle error or show an error message
                     }
-                });
+                }
+            });
 
             // }
 

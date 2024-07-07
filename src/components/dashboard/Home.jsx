@@ -1,17 +1,17 @@
 import * as React from 'react';
-import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import DashboardHeader from './DashboardHeader';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
 import { Spinner } from '../../utils/Spinner';
 import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
+import moment from 'moment';
 
 export default function Home({ navigation }) {
   const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
   const dispatch = useDispatch()
   const toast = useToast()
-
   const [assistantStats, setAssistantStats] = React.useState({
     cashCollection: '',
     onlineCollection: '',
@@ -22,7 +22,14 @@ export default function Home({ navigation }) {
   })
   const [isLoading, setLoading] = React.useState(true)
   const [isCreateTicket, setCreateTicket] = React.useState(false)
+  const [recentTickets, setRecentTickets] = React.useState([]);
 
+
+  React.useEffect(() => {
+    fetchAssistantStats()
+    fetchUserClockDetails()
+    fetchRecentTickets()
+  }, [isTicketCreated])
 
   const handleCreateTicket = async () => {
     if (!isClockedIn) {
@@ -64,7 +71,8 @@ export default function Home({ navigation }) {
               location: "",
               roleid: "",
               phoneNo: "",
-              userId: ""
+              userId: "",
+              name: ""
             },
           });
           break;
@@ -79,17 +87,13 @@ export default function Home({ navigation }) {
       }
 
     } catch (error) {
-      console.log('Error occurred while signInWithPhoneNumber', error);
+      console.log('Error occurred while get-all-vehicle-type', error);
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
     } finally {
       setCreateTicket(false)
     }
   };
 
-  React.useEffect(() => {
-    fetchAssistantStats()
-    fetchUserClockDetails()
-  }, [isTicketCreated])
 
   const fetchAssistantStats = async () => {
 
@@ -136,7 +140,8 @@ export default function Home({ navigation }) {
               location: "",
               roleid: "",
               phoneNo: "",
-              userId: ""
+              userId: "",
+              name: ""
             },
           });
           break;
@@ -151,7 +156,7 @@ export default function Home({ navigation }) {
       }
 
     } catch (error) {
-      console.log('Error occurred while signInWithPhoneNumber', error);
+      console.log('Error occurred while parking-assistant/stats', error);
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
     } finally {
       setLoading(false)
@@ -160,6 +165,10 @@ export default function Home({ navigation }) {
   }
 
   const fetchUserClockDetails = async () => {
+
+    console.log('userId.......fetchUserClockDetails..............', userId);
+    console.log('token........fetchUserClockDetails.............', token);
+
     try {
       const response = await fetch(`${url}/api/v1/users/status`, {
         method: 'GET',
@@ -190,7 +199,8 @@ export default function Home({ navigation }) {
             location: "",
             roleid: "",
             phoneNo: "",
-            userId: ""
+            userId: "",
+            name: ""
           }
         });
       } else {
@@ -201,6 +211,56 @@ export default function Home({ navigation }) {
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
     }
   }
+
+  const fetchRecentTickets = async () => {
+    try {
+      const response = await fetch(`${url}/api/v1/parking-assistant/tickets`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': userId,
+          'Authorization': `Bearer ${token}`,
+          'page': 'home'
+        },
+      });
+
+      const data = await response.json();
+      // console.log('fetchRecentTickets data', data.result.data);
+      if (response.status === 200) {
+        setRecentTickets(data.result.data);
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            roleid: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 500 ? 'danger' : 'warning';
+        toast.show(data.message, { type: toastType, placement: 'top' });
+        console.log('data.message ', data.message);
+      }
+      setLoading(false);
+    } catch (error) {
+      toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+      console.log('error.message', error.message);
+      setLoading(false);
+    }
+  }
+
+  const onCardClick = (item) => {
+    console.log('onCardClick, item', item);
+    navigation.navigate('PaymentDetails', { userEnteredData: {
+        ...item,
+        type: 'ticketDetailsPreview'
+    } });
+};
 
 
   return (
@@ -277,41 +337,41 @@ export default function Home({ navigation }) {
           </View>
 
           <TouchableOpacity disabled={isCreateTicket} onPress={handleCreateTicket} style={styles.button}>
-            <Text style={styles.buttonText}>CREATE PARKING TICKET</Text>
+            {isCreateTicket ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>CREATE PARKING TICKET</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.recentTicketsHeader}>
             <Text style={styles.recentTicketsTitle}>Recent Parking Tickets</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
+          {
+            recentTickets.map((item, i) => {
+              return (
+                <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
+                  <View key={item._id} style={styles.ticket}>
+                    <View style={styles.ticketRow}>
+                      <Text style={styles.ticketText}>Ticket #0{i + 1}</Text>
+                      <Text style={styles.ticketText}>{moment(item.createdAt).format('MM/DD/YYYY h:mm')}</Text>
+                    </View>
+                    <View style={styles.separator} />
 
-          <View style={styles.ticket}>
-            <View style={styles.ticketRow}>
-              <Text style={styles.ticketText}>Ticket #001</Text>
-              <Text style={styles.ticketText}>10/25/2022 15:30</Text>
-            </View>
-            <View style={styles.separator} />
+                    <View style={styles.ticketRow}>
+                      <Text style={styles.ticketText}>Vehicle No {item.vehicleNumber}</Text>
+                      <Text style={styles.ticketText}>{item.paymentMode}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
 
-            <View style={styles.ticketRow}>
-              <Text style={styles.ticketText}>Vehicle No MH04 CK 43303</Text>
-              <Text style={styles.ticketText}>Cash</Text>
-            </View>
-          </View>
+              )
+            })
+          }
 
-          <View style={styles.ticket}>
-            <View style={styles.ticketRow}>
-              <Text style={styles.ticketText}>Ticket #002</Text>
-              <Text style={styles.ticketText}>10/25/2022 15:50</Text>
-            </View>
-            <View style={styles.separator} />
-
-            <View style={styles.ticketRow}>
-              <Text style={styles.ticketText}>Vehicle No MH04 CK 43303</Text>
-              <Text style={styles.ticketText}>Cash</Text>
-            </View>
-          </View>
         </ScrollView>
       }
 
