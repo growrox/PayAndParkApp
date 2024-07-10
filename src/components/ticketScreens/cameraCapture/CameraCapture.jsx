@@ -6,12 +6,13 @@ import { url } from '../../../utils/url';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 
-export default function CameraCapture({ onCapture }) {
+export default function CameraCapture({ onCapture, setIsCapturing }) {
     const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
 
 
 
     const handleCapture = async () => {
+        setIsCapturing(true)
         const options = {
             mediaType: 'photo',
             maxWidth: 300,
@@ -38,12 +39,12 @@ export default function CameraCapture({ onCapture }) {
             ImagePicker.launchCamera(options, async (response) => {
 
                 if (response.didCancel) {
-                    console.log('User cancelled image picker by pressing back button');
+                    // console.log('User cancelled image picker by pressing back button');
                 } else if (response.error) {
                     console.log('ImagePicker Error: ', response.error);
                 } else if (response.customButton) {
-                    console.log('User selected custom button: ', response.customButton);
-                    Alert.alert(response.customButton);
+                    // console.log('User selected custom button: ', response.customButton);
+                    // Alert.alert(response.customButton);
                 } else {
                     const source = { uri: response.uri };
                     // console.log('image response...............', JSON.stringify(response));
@@ -64,7 +65,7 @@ export default function CameraCapture({ onCapture }) {
                         });
 
                         formData.append('assistantID', userId)
-                        console.log("url", url);
+                        // console.log("url", url);
                         const uploadResponse = await axios.post(`${url}/api/v1/parking-tickets/uploadParkingTicket`, formData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data',
@@ -88,6 +89,12 @@ export default function CameraCapture({ onCapture }) {
         } else {
             Alert.alert('Camera Permission', 'Camera permission is required to take pictures.');
         }
+
+        setTimeout(() => {
+            setIsCapturing(false)
+
+        }, 3000)
+
     };
 
 
@@ -104,8 +111,8 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 16,
         alignItems: 'center',
-        marginBottom: 26,
-        marginTop: 6
+        // marginBottom: 26,
+        // marginTop: 6
     },
     buttonText: {
         fontSize: 16,

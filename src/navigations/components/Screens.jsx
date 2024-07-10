@@ -46,10 +46,10 @@ export default function Screens() {
 
     ]
 
-    useEffect(() => {
-        console.log('isAuthenticated', isAuthenticated);
-        // clearPersistedState()
-    }, [])
+    // useEffect(() => {
+    //     console.log('isAuthenticated', isAuthenticated);
+    //     // clearPersistedState()
+    // }, [])
 
 
     return (
@@ -57,7 +57,7 @@ export default function Screens() {
             {isAuthenticated == true ? (
 
                 StackScreensAuthenticated.map((data, index) => {
-                    console.log('StackScreensAuthenticated gets hit');
+                    // console.log('StackScreensAuthenticated gets hit');
                     return (
                         <Stack.Screen
                             name={data.screen}
@@ -72,7 +72,7 @@ export default function Screens() {
 
             ) : (
                 <>
-                    {console.log('StackScreensAuthenticated not gets hit')}
+                    {/* {console.log('StackScreensAuthenticated not gets hit')} */}
                     <Stack.Screen
                         name="authStack"
                         component={AuthStack}

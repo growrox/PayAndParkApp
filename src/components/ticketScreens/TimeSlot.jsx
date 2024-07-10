@@ -5,12 +5,8 @@ import DashboardHeader from '../dashboard/DashboardHeader';
 export default function TimeSlot({ navigation, route }) {
     const { selectedVehicle } = route.params;
 
-    React.useEffect(() => {
-        console.log('selectedVehicle', selectedVehicle);
-    }, [selectedVehicle])
-
     const handleCardPress = (slot, amount) => {
-        console.log(`Selected time slot type: ${slot}`);
+        // console.log(`Selected time slot type: ${slot}`);
         // if (slot === 'All Month Pass') {
         //     return
         // }

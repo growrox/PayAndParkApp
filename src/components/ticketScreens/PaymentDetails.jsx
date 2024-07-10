@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
 import { AUTH_LOG_OUT } from '../../redux/types';
 import { CREATE_TICKET } from '../../redux/types';
-import SuccessModal from './SuccessModal'; // Import the SuccessModal component
+import SuccessModal from './SuccessModal';
 import RazorpayCheckout from 'react-native-razorpay';
 import axios from "axios"
 
@@ -29,7 +29,10 @@ const PaymentDetails = ({ navigation, route }) => {
         paymentMode: '',
         amount: '',
         duration: '',
-        remarks: ''
+        remarks: '',
+        name: '',
+        isPass: '',
+        passId: ''
     });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -42,7 +45,10 @@ const PaymentDetails = ({ navigation, route }) => {
                     paymentMode: userEnteredData.paymentMode,
                     amount: userEnteredData.amount,
                     duration: userEnteredData.duration,
-                    remarks: userEnteredData?.remarks || ""
+                    remarks: userEnteredData?.remarks || "",
+                    name: userEnteredData.name || 'Pay And Park',
+                    isPass: userEnteredData.isPass,
+                    passId: userEnteredData.passId
                 });
             } else {
                 setDetails({
@@ -51,14 +57,17 @@ const PaymentDetails = ({ navigation, route }) => {
                     paymentMode: userEnteredData.paymentMethod,
                     amount: userEnteredData.paymentMethod === 'Free' ? 0 : userEnteredData.selectedAmount,
                     duration: userEnteredData.selectedTime,
-                    remarks: userEnteredData.remarks
+                    remarks: userEnteredData.remarks,
+                    name: userEnteredData.name || 'Pay And Park',
+                    isPass: userEnteredData.isPass,
+                    passId: userEnteredData.passId
                 });
             }
         }
     }, [userEnteredData]);
 
     const initiatePayment = async () => {
-        console.log('url ', url, token);
+        // console.log('url ', url, token);
 
         const response = await fetch(`${url}/api/v1/ticket/generate-order`, {
             method: 'POST',
@@ -71,7 +80,7 @@ const PaymentDetails = ({ navigation, route }) => {
         });
 
         const data = await response.json();
-        console.log('generate-order data.............', data);
+        // console.log('generate-order data.............', data);
 
         if (response.status === 200) {
             const options = {
@@ -86,7 +95,7 @@ const PaymentDetails = ({ navigation, route }) => {
                 prefill: {
                     email: 'hasan@example.com',
                     contact: '9191919191',
-                    name: 'Hasan',
+                    name: details.name
                 },
                 // method: {
                 //     netbanking: false,
@@ -99,7 +108,7 @@ const PaymentDetails = ({ navigation, route }) => {
 
             try {
                 const paymentResult = await RazorpayCheckout.open(options);
-                console.log('paymentResult', paymentResult);
+                // console.log('paymentResult', paymentResult);
                 return { result: paymentResult, order_id: data.result.id, ref_id: data.result.reference_id };
             } catch (error) {
                 console.error('Razorpay error', error);
@@ -124,13 +133,16 @@ const PaymentDetails = ({ navigation, route }) => {
                 }
             });
         } else {
-            const toastType = response.status >= 500 ? 'danger' : 'warning';
-            toast.show(data.message, { type: toastType, placement: 'top' });
+            const toastType = response.status >= 400 ? 'danger' : 'warning';
+            const messageData = response.status >= 400 ? data.error : data.message
+            // console.log('messageData', messageData);
+            toast.show(messageData, { type: toastType, placement: 'top' });
+            // console.log('response.status data.message  data.error', response.status, data.message, data.error)
         }
     };
 
     const deleteOrder = async (refID) => {
-        console.log('deleteOrder refID', refID);
+        // console.log('deleteOrder refID', refID);
         try {
             const response = await fetch(`${url}/api/v1/ticket/order/${refID}`, {
                 method: 'DELETE',
@@ -143,10 +155,37 @@ const PaymentDetails = ({ navigation, route }) => {
             });
 
             const data = await response.json();
-            console.log('data of delete........', data);
+            // console.log('data of delete........', data);
 
             if (response.status === 200) {
                 toast.show('Order deleted successfully', { type: 'success', placement: 'top' });
+            } else {
+                handleErrorResponse(response, data);
+            }
+        } catch (error) {
+            toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+        }
+    };
+
+    const successPayment = async (result) => {
+        console.log('successOrder result', result);
+        try {
+            const response = await fetch(`${url}/api/v1/ticket/payment-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-client-source': 'app',
+                    'userId': userId,
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(result)
+            });
+
+            const data = await response.json();
+            // console.log('data of delete........', data);
+
+            if (response.status === 200) {
+                toast.show('Payment completed successfully', { type: 'success', placement: 'top' });
             } else {
                 handleErrorResponse(response, data);
             }
@@ -159,11 +198,11 @@ const PaymentDetails = ({ navigation, route }) => {
         const { vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks } = details;
         // console.log('paymentMode:', paymentMode);
         // console.log('Details:', vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks);
-        // console.log("Token:", token);
+        // console.log("amount:", amount);
 
-        if (!amount && paymentMode !== 'Free') {
-            return toast.show("Please enter an amount.", { type: 'warning', placement: 'top' });
-        }
+        // if (!amount && paymentMode !== 'Free') {
+        //     return toast.show("Please enter an amount.", { type: 'warning', placement: 'top' });
+        // }
 
         let paymentResult;
         if (paymentMode === "Online") {
@@ -173,11 +212,13 @@ const PaymentDetails = ({ navigation, route }) => {
             if (!paymentResult.result) {
                 await deleteOrder(paymentResult.ref_id);
                 return;
+            } else {
+                await successPayment(paymentResult.result)
             }
         }
 
         try {
-
+            console.log('paymentResult.ref_id', paymentResult?.ref_id);
             const apiData = {
                 vehicleType: userEnteredData.selectedVehicle,
                 duration: duration === 'All Month Pass' ? 0 : duration,
@@ -187,9 +228,12 @@ const PaymentDetails = ({ navigation, route }) => {
                 amount: paymentMode === 'Free' ? 0 : amount,
                 image: userEnteredData.vehicleImage.path,
                 remarks,
-                onlineTransactionId: paymentMode === 'Free' ? paymentResult.result.razorpay_payment_id : "",
+                onlineTransactionId: paymentMode === 'Online' ? paymentResult.ref_id : "",
+                name: details.name,
+                isPass: details.isPass,
+                ...(duration === 'All Month Pass' ? { passId: details.passId } : {})
             };
-            console.log('apiData,,,,,,,,,,,,,,,,,,', apiData);
+            console.log('apiData,,,hit ,,,,,,,,,,,,,,,', apiData);
 
             const response = await fetch(`${url}/api/v1/parking-tickets/tickets`, {
                 method: 'POST',
@@ -237,6 +281,12 @@ const PaymentDetails = ({ navigation, route }) => {
                 <View style={styles.subHeader}>
                     <Text style={styles.subHeaderText}>Payment Details</Text>
                 </View>
+                <Text style={styles.label}>Name</Text>
+                <TextInput
+                    style={styles.input}
+                    value={details.name}
+                    editable={false}
+                />
                 <Text style={styles.label}>Vehicle Number</Text>
                 <TextInput
                     style={styles.input}

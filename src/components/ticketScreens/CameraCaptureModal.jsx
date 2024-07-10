@@ -2,23 +2,18 @@ import React from 'react';
 import { View, Modal, StyleSheet } from 'react-native';
 import CameraCapture from './cameraCapture/CameraCapture';
 
-const CameraCaptureModal = ({ isVisible, handleCapture }) => {
-
-
-
-    // Disable closing modal on tap outside or pressing hardware back button
-    const onRequestClose = () => { };
+const CameraCaptureModal = ({ isVisible, handleCapture, handleCloseCaptureModal, setIsCapturing }) => {
 
     return (
         <Modal
             animationType="slide"
             transparent={true}
             visible={isVisible}
-            onRequestClose={onRequestClose}
+            onRequestClose={handleCloseCaptureModal}
         >
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
-                    <CameraCapture onCapture={(uri, path) => handleCapture(uri, path)} />
+                    <CameraCapture onCapture={(uri, path) => handleCapture(uri, path)} setIsCapturing={setIsCapturing} />
                 </View>
             </View>
         </Modal>
@@ -46,27 +41,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         color: 'green',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    modalSubText: {
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 20,
-        color: '#333',
-    },
-    modalButton: {
-        backgroundColor: '#007bff',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 4,
-        width: '80%', // Adjust button width as needed
-        alignItems: 'center',
-    },
-    modalButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+        // marginBottom: 10,
         textAlign: 'center',
     },
 });

@@ -34,3 +34,8 @@
    1) need to add a pass button ===> api ===>  {{URL}}/api/v1/vehicle-passes/7218074913
 
    for home page ticket search query: vehicle number, ticket no, status , selectedMode
+
+
+   jul-8 changes or updates
+
+   if  response.status >= 500 then need to show data.error else data.message

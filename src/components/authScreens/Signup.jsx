@@ -25,9 +25,9 @@ const Signup = () => {
       supervisorCode: signupData.supervisorCode
     }
 
-    console.log('hit signup', signupData);
+    // console.log('hit signup', signupData);
     try {
-      console.log('clicked login ');
+      // console.log('clicked login ');
       const response = await fetch(`${url}/api/v1/sign-up`, {
         method: 'POST',
         headers: {
@@ -38,20 +38,28 @@ const Signup = () => {
       });
 
       const data = await response.json();
-      console.log('data of response.......', data);
+      // console.log('data of response.......', data);
 
-      switch (response.status) {
-        case 400:
-        case 300:
-          toast.show(data.message, { type: 'warning', placement: 'top' });
-          break;
-        case 200:
-          toast.show(data.message, { type: 'success', placement: 'top' });
-          navigation.navigate('VerifyOTP', { phoneNo: signupData.phoneNo, otpFromResponse: data.OTP });
-          break;
-        default:
-          console.log('default response.status:', response.status);
-          toast.show(data.message, { placement: 'top' })
+      if (response.status === 200) {
+        toast.show(data.message, { type: 'success', placement: 'top' });
+        navigation.navigate('VerifyOTP', { phoneNo: signupData.phoneNo, otpFromResponse: data.OTP });
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            roleid: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
       }
 
     } catch (error) {
@@ -65,7 +73,7 @@ const Signup = () => {
   const handleInputChange = useCallback((event, type) => {
     const { text } = event.nativeEvent;
 
-    console.log('text, type', text, '   ', type);
+    // console.log('text, type', text, '   ', type);
     setSignupData((prev) => ({
       ...prev,
       [type]: text

@@ -14,12 +14,8 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
         navigation.navigate('Home');
     };
 
-    React.useEffect(() => {
-        console.log('isClockedIn from dashboard', isClockedIn);
-    }, [isClockedIn])
-
     const handleProfilePress = () => {
-        console.log('Profile pressed');
+        // console.log('Profile pressed');
         setModalVisible(true);
     };
 
@@ -27,7 +23,7 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
         <View style={styles.header}>
             <TouchableWithoutFeedback onPress={handleLogoPress}>
                 <Image
-                    source={require('../../utils/images/Logo.png')}
+                    source={require('../../utils/images/Logo-without-bg.png')}
                     style={styles.logo}
                 />
             </TouchableWithoutFeedback>
@@ -53,11 +49,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 16,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#cacaca',
+        // borderBottomColor: '#cacaca',
+        // borderBottomWidth: 1
     },
     logo: {
         width: 90,
-        height: 90,
+        height: 65,
         resizeMode: 'contain',
     },
     profileLogo: {
@@ -98,28 +96,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContent: {
-        width: '80%',
-        backgroundColor: 'white',
-        borderRadius: 8,
-        padding: 20,
-        alignItems: 'center',
-    },
-    modalImage: {
-        width: 100,
-        height: 100,
-        marginBottom: 20,
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    modalText: {
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 20,
     },
     closeButton: {
         backgroundColor: '#007bff',

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Image } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
 import { useToast } from 'react-native-toast-notifications';
@@ -16,14 +16,10 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
         setModalVisible(false);
     };
 
-    React.useEffect(() => {
-        console.log('asdfjsadfasdfj', isClockedIn);
-    }, [isClockedIn])
 
     const handleClockin = async () => {
         setLoading(true)
         try {
-            console.log();
             const response = await fetch(`${url}/api/v1/attendance/clock-in/${userId}`, {
                 method: 'GET',
                 headers: {
@@ -33,7 +29,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
             });
 
             const data = await response.json();
-            console.log('clockin data', data);
+            // console.log('clockin data', data);
             if (response.status === 200) {
                 dispatch({
                     type: ASSISTANT_CLOCK,
@@ -41,8 +37,8 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                         isClockedIn: true,
                     }
                 });
-                // toast.show(data.message, { type: 'success', placement: 'top' });
-                console.log("data.message success", data.message);
+                toast.show(data.message, { type: 'success', placement: 'top' });
+                // console.log("data.message success", data.message);
             } else if (response.status === 401 || response.status === 406) {
                 dispatch({
                     type: AUTH_LOG_OUT,
@@ -56,12 +52,14 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                     }
                 });
             } else {
-                const toastType = response.status >= 500 ? 'danger' : 'warning';
-                // toast.show(data.message, { type: toastType, placement: 'top' });
-                console.log('data.message ', data.message);
+                const toastType = response.status >= 400 ? 'danger' : 'warning';
+                const messageData = response.status >= 400 ? data.error : data.message
+                // console.log('messageData', messageData);
+                toast.show(messageData, { type: toastType, placement: 'top' });
+                // console.log('response.status data.message  data.error', response.status, data.message, data.error)
             }
         } catch (error) {
-            // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+            toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
             console.log('error.message', error.message);
         } finally {
             setLoading(false)
@@ -85,7 +83,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
             });
 
             const data = await response.json();
-            console.log('clockout data', data);
+            // console.log('clockout data', data);
             if (response.status === 200) {
                 dispatch({
                     type: ASSISTANT_CLOCK,
@@ -93,6 +91,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                         isClockedIn: false,
                     }
                 });
+                toast.show(data.message, { type: 'success', placement: 'top' });
             } else if (response.status === 401 || response.status === 406) {
                 dispatch({
                     type: AUTH_LOG_OUT,
@@ -106,12 +105,14 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                     }
                 });
             } else {
-                const toastType = response.status >= 500 ? 'danger' : 'warning';
-                // toast.show(data.message, { type: toastType, placement: 'top' });
-                console.log('data.message response.status 500', data.message)
+                const toastType = response.status >= 400 ? 'danger' : 'warning';
+                const messageData = response.status >= 400 ? data.error : data.message
+                // console.log('messageData', messageData);
+                toast.show(messageData, { type: toastType, placement: 'top' });
+                // console.log('response.status data.message  data.error', response.status, data.message, data.error)
             }
         } catch (error) {
-            // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+            toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
             console.log('data.message error', error.message)
 
         } finally {
@@ -120,7 +121,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
     }
 
     const handleLogout = () => {
-        console.log('Logged out');
+        // console.log('Logged out');
         setModalVisible(false);
         dispatch({
             type: AUTH_LOG_OUT,
@@ -189,13 +190,16 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                                         isClockedIn ? handleClockOut() : handleClockin()
                                     }}
                                 >
-                                    <Text style={styles.clockInText}>{isClockedIn ? 'Clock Out' : 'Clock In'}</Text>
+                                    {isLoading ? <ActivityIndicator size="small" color="#fff" /> :
+                                        <Text disabled={isLoading} style={styles.clockInText}>{isClockedIn ? 'Clock Out' : 'Clock In'}</Text>}
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
                                     style={styles.logoutButton}
                                     onPress={handleLogout}
                                 >
+
+
                                     <Text style={styles.logoutButtonText}>Log Out</Text>
                                 </TouchableOpacity>
                             </View>

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Text, TouchableOpacity, TextInput, View, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, TextInput, View, StyleSheet, ActivityIndicator } from 'react-native';
 import MainComponent from './MainComponent';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from "react-native-toast-notifications";
@@ -9,14 +9,16 @@ const Login = () => {
   const navigation = useNavigation();
   const [phoneNo, setPhoneNo] = useState('');
   const toast = useToast();
+  const [isLoginClicked, setLoginClicked] = useState(false)
 
   const handleSignInPress = useCallback(async () => {
     if (phoneNo.length < 3) {
       return toast.show("Please enter a valid phone number", { type: 'danger', placement: 'top' });
     }
+    setLoginClicked(true)
 
     try {
-      console.log('clicked login phoneNo', phoneNo);
+      // console.log('clicked login phoneNo', phoneNo);
       const response = await fetch(`${url}/api/v1/login`, {
         method: 'POST',
         headers: {
@@ -26,26 +28,36 @@ const Login = () => {
         body: JSON.stringify({ phone: phoneNo }),
       });
 
-      const data = await response.json();
-      console.log('data of response.......', data);
+      const data = await response?.json();
+      // console.log('data of response.......', data);
 
-      switch (response.status) {
-        case 400:
-        case 300:
-          toast.show(data.message, { type: 'warning', placement: 'top' });
-          break;
-        case 200:
-          toast.show(data.message, { type: 'success', placement: 'top' });
-          navigation.navigate('VerifyOTP', { phoneNo, otpFromResponse: data.OTP });
-          break;
-        default:
-          console.log('default response.status:', response.status);
-          toast.show(data.message, { placement: 'top' })
+      if (response.status === 200) {
+        toast.show(data.message, { type: 'success', placement: 'top' });
+        navigation.navigate('VerifyOTP', { phoneNo, otpFromResponse: data.OTP });
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            roleid: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
       }
 
     } catch (error) {
       console.log('Error occurred while signInWithPhoneNumber', error);
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setLoginClicked(false)
     }
   }, [phoneNo, navigation, toast]);
 
@@ -75,13 +87,16 @@ const Login = () => {
             />
           </View>
           <TouchableOpacity
+            disabled={isLoginClicked}
             onPress={handleSignInPress}
             style={styles.signInButton}
           >
-            <Text style={styles.signInButtonText}>SIGN IN</Text>
+            {isLoginClicked ?
+              <ActivityIndicator size="small" color="#fff" /> :
+              <Text style={styles.signInButtonText}>SIGN IN</Text>}
           </TouchableOpacity>
           <View style={styles.footer}>
-            <Text style={styles.footerText} onPress={handleSignupPress}>
+            <Text disabled={isLoginClicked} style={styles.footerText} onPress={handleSignupPress}>
               Don't have an account? Create one.
             </Text>
           </View>

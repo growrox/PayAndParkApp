@@ -14,12 +14,8 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
         navigation.navigate('Home');
     };
 
-    React.useEffect(() => {
-        console.log('isClockedIn from dashboard', isClockedIn);
-    }, [isClockedIn])
-
     const handleProfilePress = () => {
-        console.log('Profile pressed');
+        // console.log('Profile pressed');
         setModalVisible(true);
     };
 

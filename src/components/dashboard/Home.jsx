@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator, PermissionsAndroid } from 'react-native';
 import DashboardHeader from './DashboardHeader';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
@@ -7,6 +7,8 @@ import { url } from '../../utils/url';
 import { Spinner } from '../../utils/Spinner';
 import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
 import moment from 'moment';
+import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+
 
 export default function Home({ navigation }) {
   const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
@@ -24,6 +26,34 @@ export default function Home({ navigation }) {
   const [isCreateTicket, setCreateTicket] = React.useState(false)
   const [recentTickets, setRecentTickets] = React.useState([]);
 
+
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message:
+            'App needs access to your camera ' + 'so you can take pictures.',
+          // buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use the camera');
+      } else {
+        console.log('Camera permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+
+  React.useEffect(() => {
+    requestCameraPermission();
+  }, []);
 
   React.useEffect(() => {
     fetchAssistantStats()
@@ -51,39 +81,27 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('data of response.......', data);
+      // console.log('data of response.......', data);
 
-      switch (response.status) {
-        case 200:
-          navigation.navigate('VehicleType', { vehicleTypes: data.result });
-          break;
-        case 300:
-        case 400:
-          toast.show(data.message, { type: 'warning', placement: 'top' });
-          break;
-
-        case 401:
-        case 406:
-          dispatch({
-            type: AUTH_LOG_OUT,
-            payload: {
-              token: "",
-              location: "",
-              roleid: "",
-              phoneNo: "",
-              userId: "",
-              name: ""
-            },
-          });
-          break;
-
-        case 500:
-          toast.show(data.message, { type: 'danger', placement: 'top' });
-          break;
-
-        default:
-          console.log('default response.status:', response.status);
-          toast.show(data.message, { placement: 'top' })
+      if (response.status === 200) {
+        navigation.navigate('VehicleType', { vehicleTypes: data.result });
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            roleid: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
       }
 
     } catch (error) {
@@ -110,49 +128,35 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('data of response.......', data);
+      // console.log('data of response.......', data);
 
-      switch (response.status) {
-
-        case 200:
-          const { TotalAmount, TotalCash, TotalOnline, LastSettledDate } = data.result
-          const calcPayable = TotalAmount - TotalOnline
-          setAssistantStats({
-            cashCollection: TotalCash,
-            onlineCollection: TotalOnline,
-            totalPayable: calcPayable,
-            totalCollection: TotalAmount,
-            bonus: TotalAmount >= 2000 ? 200 : 0
-          })
-          break;
-
-        case 300:
-        case 400:
-          toast.show(data.message, { type: 'warning', placement: 'top' });
-          break;
-
-        case 401:
-        case 406:
-          dispatch({
-            type: AUTH_LOG_OUT,
-            payload: {
-              token: "",
-              location: "",
-              roleid: "",
-              phoneNo: "",
-              userId: "",
-              name: ""
-            },
-          });
-          break;
-
-        case 500:
-          toast.show(data.message, { type: 'danger', placement: 'top' });
-          break;
-
-        default:
-          console.log('default response.status:', response.status);
-          toast.show(data.message, { placement: 'top' })
+      if (response.status === 200) {
+        const { TotalAmount, TotalCash, TotalOnline, LastSettledDate } = data.result
+        const calcPayable = TotalAmount - TotalOnline
+        setAssistantStats({
+          cashCollection: TotalCash,
+          onlineCollection: TotalOnline,
+          totalPayable: calcPayable,
+          totalCollection: TotalAmount,
+          bonus: TotalAmount >= 2000 ? 200 : 0
+        })
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            roleid: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
       }
 
     } catch (error) {
@@ -160,7 +164,7 @@ export default function Home({ navigation }) {
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
     } finally {
       setLoading(false)
-      console.log('trigger falsae');
+      // console.log('trigger falsae');
     }
   }
 
@@ -204,8 +208,11 @@ export default function Home({ navigation }) {
           }
         });
       } else {
-        const toastType = response.status >= 500 ? 'danger' : 'warning';
-        toast.show(data.message, { type: toastType, placement: 'top' });
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        // console.log('messageData', messageData);
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
       }
     } catch (error) {
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
@@ -228,7 +235,7 @@ export default function Home({ navigation }) {
       const data = await response.json();
       // console.log('fetchRecentTickets data', data.result.data);
       if (response.status === 200) {
-        setRecentTickets(data.result.data);
+        setRecentTickets(data?.result?.data || []);
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
           type: AUTH_LOG_OUT,
@@ -242,25 +249,29 @@ export default function Home({ navigation }) {
           }
         });
       } else {
-        const toastType = response.status >= 500 ? 'danger' : 'warning';
-        toast.show(data.message, { type: toastType, placement: 'top' });
-        console.log('data.message ', data.message);
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        // console.log('messageData', messageData);
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
       }
       setLoading(false);
     } catch (error) {
-      toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+      // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
       console.log('error.message', error.message);
       setLoading(false);
     }
   }
 
   const onCardClick = (item) => {
-    console.log('onCardClick, item', item);
-    navigation.navigate('PaymentDetails', { userEnteredData: {
+    // console.log('onCardClick, item', item);
+    navigation.navigate('PaymentDetails', {
+      userEnteredData: {
         ...item,
         type: 'ticketDetailsPreview'
-    } });
-};
+      }
+    });
+  };
 
 
   return (
@@ -324,7 +335,7 @@ export default function Home({ navigation }) {
           </View>
 
           <View style={styles.cardContainer}>
-            <View style={[styles.collectionCard, styles.bonusContainer]}>
+            <View style={[styles.BonusCard, styles.bonusContainer]}>
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../utils/images/homeAssistant/star.png')}
@@ -350,27 +361,35 @@ export default function Home({ navigation }) {
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
-          {
-            recentTickets.map((item, i) => {
-              return (
-                <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
-                  <View key={item._id} style={styles.ticket}>
-                    <View style={styles.ticketRow}>
-                      <Text style={styles.ticketText}>Ticket #0{i + 1}</Text>
-                      <Text style={styles.ticketText}>{moment(item.createdAt).format('MM/DD/YYYY h:mm')}</Text>
-                    </View>
-                    <View style={styles.separator} />
+          {recentTickets?.length < 1 ? <View style={{ flex: 1, borderWidth: 0.4, padding: 8, marginTop: 15, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={styles.phone}>No ticket created yet!</Text>
+          </View> : <>
+            {
+              recentTickets.map((item, i) => {
+                return (
+                  <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
+                    <View key={item._id} style={styles.ticket}>
+                      <View style={styles.ticketRow}>
+                        <Text style={styles.ticketText}>Ticket #0{i + 1}</Text>
+                        <Text style={styles.ticketText}>
+                          {/* {moment(item.createdAt).format('MM/DD/YYYY h:mm')} */}
+                          {moment.utc(item.createdAt).local().format('MM/DD/YYYY h:mm A')}
+                        </Text>
+                      </View>
+                      <View style={styles.separator} />
 
-                    <View style={styles.ticketRow}>
-                      <Text style={styles.ticketText}>Vehicle No {item.vehicleNumber}</Text>
-                      <Text style={styles.ticketText}>{item.paymentMode}</Text>
+                      <View style={styles.ticketRow}>
+                        <Text style={styles.ticketText}>Vehicle No {item.vehicleNumber}</Text>
+                        <Text style={styles.ticketText}>{item.paymentMode}</Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
 
-              )
-            })
-          }
+                )
+              })
+            }
+          </>}
+
 
         </ScrollView>
       }
@@ -405,6 +424,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#167afa',
     borderRadius: 8,
     padding: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  BonusCard: {
+    backgroundColor: '#167afa',
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Text, View, TouchableOpacity, ScrollView, StyleSheet, TextInput, ImageBackground, PermissionsAndroid, Image } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView, StyleSheet, TextInput, ImageBackground, PermissionsAndroid, Image, Pressable } from 'react-native';
 import DashboardHeader from '../dashboard/DashboardHeader';
 import { useToast } from 'react-native-toast-notifications';
 import CameraCapture from './cameraCapture/CameraCapture';
@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { url } from '../../utils/url';
 import CameraCaptureModal from './CameraCaptureModal';
 import Geolocation from 'react-native-geolocation-service';
+import moment from 'moment';
 
 
 const requestLocationPermission = async () => {
@@ -23,7 +24,7 @@ const requestLocationPermission = async () => {
                 buttonPositive: 'OK',
             },
         );
-        console.log('granted', granted);
+        // console.log('granted', granted);
         if (granted === 'granted') {
             console.log('You can use Geolocation');
             return true;
@@ -41,6 +42,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     const { selectedVehicle, selectedAmount, selectedTime } = route.params;
     const [vehicleNumber, setVehicleNumber] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [name, setName] = useState('');
     const [selectedMethod, setSelectedMethod] = useState(null);
     const [imageUri, setImageUri] = useState({
         uri: '',
@@ -52,8 +54,13 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [isCapture, setCapture] = useState({
         capturing: false,
-        actionID: ''
+        actionID: '',
+        name: '',
+        phoneNumber: '',
+        vehicleNumber: '',
+        passId: ''
     })
+    const [isCapturing, setIsCapturing] = useState(false)
     const [location, setLocation] = useState(false);
 
 
@@ -64,6 +71,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     };
 
     useEffect(() => {
+        // console.log("selectedVehicle, selectedAmount, selectedTime", selectedVehicle, selectedAmount, selectedTime);
         getLocation()
     }, [])
 
@@ -81,8 +89,12 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             toast.show('Please select a payment method.', { type: 'warning', placement: 'top' });
             return;
         }
-        if (!imageUri) {
+        if (!imageUri?.uri) {
             toast.show('Please capture an image.', { type: 'warning', placement: 'top' });
+            return;
+        }
+        if (!name) {
+            toast.show('Please Enter a Owner name.', { type: 'warning', placement: 'top' });
             return;
         }
         if (selectedMethod === 'Free') {
@@ -90,7 +102,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 return toast.show("Please enter any remarks.", { type: 'warning', placement: 'top' });
             }
         }
-        console.log("imageUri", imageUri);
+        // console.log("imageUri", imageUri);
 
 
         const userEnteredData = {
@@ -105,29 +117,62 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             address: {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude
-            }
+            },
+            name: name,
+            passId: isCapture.passId,
+            isPass: selectedTime === 'All Month Pass' ? true : false
         };
 
         navigation.navigate('PaymentDetails', { userEnteredData });
     };
 
-    const handleRemoveImage = () => {
+    const handleRemoveImage = async () => {
+        // try {
+        //     const response = await fetch(`${url}/api/v1/vehicle-passes`, {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'x-client-source': 'app',
+        //         },
+        //     });
+
+        //     const data = await response.json();
+        //     // console.log('vehicle-passes search data', data.result.length);
+        //     if (response.status === 200) {
+        //         // console.log('data.result', data.result);
+        //         setPassData(data.result)
+        //     } else if (response.status === 401 || response.status === 406) {
+        //         dispatch({
+        //             type: AUTH_LOG_OUT,
+        //             payload: {
+        //                 token: "",
+        //                 location: "",
+        //                 roleid: "",
+        //                 phoneNo: "",
+        //                 userId: "",
+        //                 name: ""
+        //             }
+        //         });
+        //     } else {
+        //         const toastType = response.status >= 400 ? 'danger' : 'warning';
+        //         const messageData = response.status >= 400 ? data.error : data.message
+        //         console.log('messageData', messageData);
+        //         // toast.show(messageData, { type: toastType, placement: 'top' });
+        //         // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+        //     }
+        // } catch (error) {
+        //     toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+        //     console.log('error.message', error.message);
+        // } finally {
         setImageUri({
             uri: '',
             path: ''
         });
+        // }
+
     };
 
     const handleSubmitSearch = async () => {
-        if (!vehicleNumber) {
-            toast.show('Please enter a vehicle number', { type: 'warning', placement: 'top' });
-            return;
-        }
-
-        if (phoneNumber.length !== 10) {
-            toast.show('Phone number cannot be less than ten digits.', { type: 'warning', placement: 'top' });
-            return;
-        }
 
         if (searchQuery.length < 1) {
             toast.show('Please enter any keyword to search', { type: 'warning', placement: 'top' });
@@ -142,8 +187,9 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             });
 
             const data = await response.json();
-            console.log('vehicle-passes search data', data);
+            // console.log('vehicle-passes search data', data.result.length);
             if (response.status === 200) {
+                // console.log('data.result', data.result);
                 setPassData(data.result)
             } else if (response.status === 401 || response.status === 406) {
                 dispatch({
@@ -158,9 +204,11 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                     }
                 });
             } else {
-                const toastType = response.status >= 500 ? 'danger' : 'warning';
-                toast.show(data.message, { type: toastType, placement: 'top' });
-                console.log('data.message ', data.message);
+                const toastType = response.status >= 400 ? 'danger' : 'warning';
+                const messageData = response.status >= 400 ? data.error : data.message
+                console.log('messageData', messageData);
+                // toast.show(messageData, { type: toastType, placement: 'top' });
+                // console.log('response.status data.message  data.error', response.status, data.message, data.error)
             }
         } catch (error) {
             toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
@@ -175,11 +223,11 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     const getLocation = () => {
         const result = requestLocationPermission();
         result.then(res => {
-            console.log('res is:', res);
+            // console.log('res is:', res);
             if (res) {
                 Geolocation.getCurrentPosition(
                     position => {
-                        console.log('position', position);
+                        // console.log('position', position);
                         setLocation(position);
                     },
                     error => {
@@ -191,7 +239,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 );
             }
         });
-        console.log(location);
+        // console.log(location);
     };
 
     // const renderItem = ({ item }) => (
@@ -213,30 +261,33 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     //     </Card>
     // );
 
-    const onCardClick = (id, isActive) => {
+    const onCardClick = (_data) => {
 
-        console.log('id, isActive', id, '   ', isActive);
-        if (!isActive) {
-            toast.show('Your pass is expired', { type: 'warning', placement: 'top' });
+        // console.log('id, isActive name', _data._id, '   ', _data.isActive, '  ', _data.name);
+        if (!_data.isActive) {
+            return toast.show('Your pass is expired', { type: 'warning', placement: 'top' });
         }
         setCapture({
             capturing: true,
-            actionID: id
+            actionID: _data._id,
+            name: _data.name,
+            vehicleNumber: _data.vehicleNo,
+            phoneNumber: _data.phone,
+            isPass: _data._id
         })
     }
 
-    const handleCapture = (URI, type, name) => {
-        console.log('URI, type, name', URI, type, name);
-
+    const handleCapture = (uri, path) => {
+        // console.log('uri, path on handleCapture ', uri, path);
+        // console.log("selectedTime", selectedTime);
 
         const userEnteredData = {
-            vehicleNumber,
-            phoneNumber,
-            paymentMethod: 'Free',
+            vehicleNumber: isCapture.phoneNumber,
+            phoneNumber: isCapture.phoneNumber,
+            paymentMethod: selectedTime === 'All Month Pass' ? 'Pass' : 'Free',
             vehicleImage: {
-                name,
-                type,
-                uri: URI
+                path,
+                uri
             },
             selectedTime: 0,
             selectedAmount: 0,
@@ -246,7 +297,10 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             address: {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude
-            }
+            },
+            name: isCapture.name,
+            passId: isCapture.passId,
+            isPass: selectedTime === 'All Month Pass' ? true : false
         };
         setCapture({
             capturing: false,
@@ -255,6 +309,17 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
         navigation.navigate('PaymentDetails', { userEnteredData });
     }
+
+    const handleCloseCaptureModal = () => {
+        setCapture({
+            capturing: false,
+            actionID: ''
+        })
+    }
+
+    useEffect(() => {
+        console.log('isCapturing', isCapturing);
+    }, [isCapturing])
 
     return (
         <View style={styles.container}>
@@ -268,20 +333,29 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 </View>
 
                 <View>
-                    <TextInput
-                        style={styles.input}
-                        value={vehicleNumber}
-                        placeholder='Enter Vehicle Number'
-                        placeholderTextColor={'grey'}
-                        onChangeText={setVehicleNumber}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        value={phoneNumber}
-                        placeholder='Enter Phone Number'
-                        placeholderTextColor={'grey'}
-                        onChangeText={setPhoneNumber}
-                    />
+                    {selectedTime !== 'All Month Pass' && <>
+                        <TextInput
+                            style={styles.input}
+                            value={name}
+                            placeholder='Enter vehicle Owner Name'
+                            placeholderTextColor={'grey'}
+                            onChangeText={setName}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            value={vehicleNumber}
+                            placeholder='Enter Vehicle Number'
+                            placeholderTextColor={'grey'}
+                            onChangeText={setVehicleNumber}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            value={phoneNumber}
+                            placeholder='Enter Phone Number'
+                            placeholderTextColor={'grey'}
+                            onChangeText={setPhoneNumber}
+                        />
+                    </>}
                 </View>
 
                 {
@@ -298,7 +372,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                                     </View>
                                 </View>
                             ) : (
-                                <CameraCapture onCapture={(uri, path) => setImageUri({
+                                <CameraCapture setIsCapturing={setIsCapturing} onCapture={(uri, path) => setImageUri({
                                     uri: uri,
                                     path: path
                                 })} />
@@ -309,7 +383,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
                 {
                     selectedTime !== 'All Month Pass' && <>
-                        <Text style={styles.secondHeading}>Payment Method</Text>+
+                        <Text style={styles.secondHeading}>Payment Method</Text>
 
                         <TouchableOpacity
                             style={styles.radioButton}
@@ -373,32 +447,47 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                                     <Text style={styles.searchButtonText}>Search</Text>
                                 </TouchableOpacity>
                             </View>
+                            {passData.length < 1 ? <View style={{ flex: 1, borderWidth: 0.4, padding: 8, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
+                                <Text style={styles.phone}>No data found!</Text>
+                            </View> :
+                                <>
+                                    {passData.map((item) => (
+                                        <Pressable key={item._id} onPress={() => onCardClick(item)}>
+                                            {console.log('item............', item)}
+                                            <Card containerStyle={styles.card}>
+                                                <View style={styles.cardContent}>
+                                                    <Text style={styles.plate}>{item.vehicleNo}</Text>
+                                                    <View style={{
+                                                        padding: 3,
+                                                        backgroundColor: item.isActive ? '#2ecc71' : '#e74c3c',
+                                                        width: 55,
+                                                        height: 24,
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        borderRadius: 5,
+                                                        marginBottom: 6
+                                                    }}>
+                                                        <Text style={{ textAlign: 'center', color: 'white' }}>
+                                                            {item.isActive ? 'Active' : 'Expired'}
+                                                        </Text>
+                                                    </View>
 
-                            {passData.map((item) => (
-                                <TouchableOpacity key={item._id} onPress={() => onCardClick(item._id, item.isActive)}>
-                                    <Card containerStyle={styles.card}>
-                                        <View style={styles.cardContent}>
-                                            <Image
-                                                source={require('../../utils/images/vehiclePaymentEntry/ticket.png')}
-                                                style={styles.ticketLogo}
-                                            />
-                                            <Text style={styles.plate}>{item.vehicleNo}</Text>
-                                        </View>
-                                        <View style={styles.cardContent}>
-                                            <Image
-                                                source={require('../../utils/images/vehiclePaymentEntry/phone.png')}
-                                                style={styles.logo}
-                                            />
-                                            <Text style={styles.phone}>{item.phone}</Text>
-                                        </View>
-                                    </Card>
-                                </TouchableOpacity>
-                            ))}
+                                                </View>
+                                                <View style={styles.cardContent}>
+                                                    <Text style={styles.phone}>{item.phone}</Text>
+                                                    <Text style={{ ...styles.phone, fontSize: 14 }}>{moment(item.expireDate).format('DD-MMM-YY')}</Text>
+                                                </View>
+                                            </Card>
+                                        </Pressable>
+                                    ))}
+                                </>
+                            }
+
 
                         </View>
                     )
                 }
-                {selectedTime !== 'All Month Pass' && <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
+                {selectedTime !== 'All Month Pass' && <TouchableOpacity disabled={isCapturing} onPress={handleSubmit} style={{ ...styles.submitButton, ...(isCapturing ? { opacity: 0.5 } : {}) }}>
                     <Text style={styles.buttonText}>Submit</Text>
                 </TouchableOpacity>}
             </ScrollView >
@@ -406,6 +495,8 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             <CameraCaptureModal
                 isVisible={isCapture.capturing}
                 handleCapture={handleCapture}
+                handleCloseCaptureModal={handleCloseCaptureModal}
+                setIsCapturing={setIsCapturing}
             />
         </View >
     );
@@ -421,7 +512,6 @@ const styles = StyleSheet.create({
     },
     subHeader: {
         marginBottom: 10,
-        marginTop: 10,
     },
     subHeaderText: {
         fontSize: 24,
@@ -456,6 +546,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     secondHeading: {
+        marginTop: 20,
         fontSize: 20,
         marginBottom: 10,
     },
@@ -527,23 +618,25 @@ const styles = StyleSheet.create({
     },
 
     card: {
-        padding: 5,
+        padding: 6,
         borderRadius: 5,
+        margin: 0,
+        marginBottom: 20,
     },
     cardContent: {
         flexDirection: 'row',
-        alignItems: 'center',
+        justifyContent: 'space-between',
         marginBottom: 2,
     },
     plate: {
-        marginLeft: 10,
+        marginLeft: 5,
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#FF7F50', // Coral color
+        color: '#000',
     },
     phone: {
-        marginLeft: 10,
-        fontSize: 16,
+        marginLeft: 5,
+        fontSize: 14,
         color: '#000',
     },
     logo: {
@@ -572,6 +665,7 @@ const styles = StyleSheet.create({
     },
     searchContainer: {
         flex: 1,
+        marginTop: 10
     },
     searchContainerChild: {
         flexDirection: 'row',
@@ -580,7 +674,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 5,
         paddingLeft: 10,
-        marginBottom: 10,
+        marginBottom: 30,
     },
     searchIcon: {
         marginRight: 10,

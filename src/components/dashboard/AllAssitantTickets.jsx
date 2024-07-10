@@ -36,28 +36,43 @@ export default function AllAssitantTickets({ navigation }) {
                 },
             });
 
-            const data = await response.json();
+            const data = await response?.json();
             console.log('parking-tickets data', data);
 
             if (data.message === "No tickets found") {
-                setNoData(true);
+                return setNoData(true);
             }
 
             if (response.status === 200) {
-                if (data.result && data.result.data) {
-                    setAllTickets(page === 1 ? data.result.data : [...allTickets, ...data.result.data]);
+                if (data?.result && data?.result?.data) {
+                    setAllTickets(page === 1 ? data?.result?.data : [...allTickets, ...data?.result?.data]);
                 }
-            } else if ([401, 406].includes(response.status)) {
-                dispatch({ type: AUTH_LOG_OUT, payload: {} });
+            } else if (response.status === 401 || response.status === 406) {
+                dispatch({
+                    type: AUTH_LOG_OUT,
+                    payload: {
+                        token: "",
+                        location: "",
+                        roleid: "",
+                        phoneNo: "",
+                        userId: "",
+                        name: ""
+                    }
+                });
             } else {
-                toast.show(data.message, { type: response.status >= 500 ? 'danger' : 'warning', placement: 'top' });
+                const toastType = response.status >= 400 ? 'danger' : 'warning';
+                const messageData = response.status >= 400 ? data.error : data.message
+                toast.show(messageData, { type: toastType, placement: 'top' });
+                // console.log('response.status data.message  data.error', response.status, data.message, data.error)
             }
 
-            setLoading(false);
-            setFetchingMore(false);
+
         } catch (error) {
             toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
             console.log('error.message', error.message);
+            setLoading(false);
+            setFetchingMore(false);
+        } finally {
             setLoading(false);
             setFetchingMore(false);
         }
@@ -81,14 +96,17 @@ export default function AllAssitantTickets({ navigation }) {
         if (isNoData || isFetchingMore) return;
         setFetchingMore(true);
         setPageNumber(prevPage => prevPage + 1);
+
     };
 
     const onCardClick = (item) => {
-        console.log('onCardClick, item', item);
-        navigation.navigate('PaymentDetails', { userEnteredData: {
-            ...item,
-            type: 'ticketDetailsPreview'
-        } });
+        // console.log('onCardClick, item', item);
+        navigation.navigate('PaymentDetails', {
+            userEnteredData: {
+                ...item,
+                type: 'ticketDetailsPreview'
+            }
+        });
     };
 
     const renderTicket = ({ item, index }) => (
@@ -129,15 +147,21 @@ export default function AllAssitantTickets({ navigation }) {
             {isLoading ? (
                 <Spinner bottomMargin={30} />
             ) : (
-                <FlatList
-                    data={allTickets}
-                    renderItem={renderTicket}
-                    keyExtractor={(item) => item._id}
-                    onEndReached={loadMoreTickets}
-                    onEndReachedThreshold={0.5}
-                    ListFooterComponent={isFetchingMore && <Spinner size={30} bottomMargin={10} />}
-                    contentContainerStyle={styles.flatListContent}
-                />
+
+                <>
+                    {allTickets?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={styles.phone}>No ticket created yet!</Text>
+                    </View> : <FlatList
+                        data={allTickets}
+                        renderItem={renderTicket}
+                        keyExtractor={(item) => item._id}
+                        onEndReached={loadMoreTickets}
+                        onEndReachedThreshold={0.5}
+                        ListFooterComponent={isFetchingMore && <Spinner size={30} bottomMargin={10} />}
+                        contentContainerStyle={styles.flatListContent}
+                    />}
+                </>
+
             )}
         </View>
     );
