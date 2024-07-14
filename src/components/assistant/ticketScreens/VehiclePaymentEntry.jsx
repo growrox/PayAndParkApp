@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Text, View, TouchableOpacity, ScrollView, StyleSheet, TextInput, ImageBackground, PermissionsAndroid, Image, Pressable } from 'react-native';
-import DashboardHeader from '../dashboard/DashboardHeader';
+import DashboardHeader from '../../DashboardHeader';
 import { useToast } from 'react-native-toast-notifications';
 import CameraCapture from './cameraCapture/CameraCapture';
 import { Icon, Card } from '@rneui/themed';
-import { AUTH_LOG_OUT } from '../../redux/types';
+import { AUTH_LOG_OUT } from '../../../redux/types';
 import { useDispatch } from 'react-redux';
-import { url } from '../../utils/url';
+import { url } from '../../../utils/url';
 import CameraCaptureModal from './CameraCaptureModal';
 import Geolocation from 'react-native-geolocation-service';
 import moment from 'moment';
@@ -147,7 +147,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
         //             payload: {
         //                 token: "",
         //                 location: "",
-        //                 roleid: "",
+        //                 role: "",
         //                 phoneNo: "",
         //                 userId: "",
         //                 name: ""
@@ -197,7 +197,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                     payload: {
                         token: "",
                         location: "",
-                        roleid: "",
+                        role: "",
                         phoneNo: "",
                         userId: "",
                         name: ""
@@ -324,8 +324,8 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     return (
         <View style={styles.container}>
             <DashboardHeader
-                headerText={'Assistant'}
-                secondaryHeaderText={'Profile'}
+                headerText={'Profile'}
+                secondaryHeaderText={'ASSISTANT'}
             />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.subHeader}>
@@ -433,7 +433,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                         <View style={styles.searchContainer}>
                             <View style={styles.searchContainerChild}>
                                 <Image
-                                    source={require('../../utils/images/search.png')}
+                                    source={require('../../../utils/images/search.png')}
                                     style={styles.searchLogo}
                                 />
                                 <TextInput

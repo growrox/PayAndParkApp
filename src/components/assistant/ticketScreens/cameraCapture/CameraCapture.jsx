@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from "react-native-image-picker";
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
-import { url } from '../../../utils/url';
+import { url } from '../../../../utils/url';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 
 export default function CameraCapture({ onCapture, setIsCapturing }) {
     const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
-
+    const [capture, setCapture] = useState(false)
 
 
     const handleCapture = async () => {
@@ -36,10 +36,14 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
                     path: 'images',
                 },
             };
+            setCapture(true)
             ImagePicker.launchCamera(options, async (response) => {
-
+                setTimeout(() => {
+                    setCapture(false)
+                }, 2000)
                 if (response.didCancel) {
                     // console.log('User cancelled image picker by pressing back button');
+
                 } else if (response.error) {
                     console.log('ImagePicker Error: ', response.error);
                 } else if (response.customButton) {
@@ -76,10 +80,14 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
 
                         console.log('Upload Response:', uploadResponse.data);
                         onCapture(response.assets[0].uri, uploadResponse.data.path)
-                        // Handle success or update UI accordingly
+
+
                     } catch (error) {
                         console.error('Upload Error:', error);
-                        // Handle error or show an error message
+                    } finally {
+                        setTimeout(() => {
+                            setCapture(false)
+                        }, 2000)
                     }
                 }
             });
@@ -99,9 +107,12 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
 
 
     return (
-        <TouchableOpacity onPress={handleCapture} style={styles.button}>
-            <Text style={styles.buttonText}>Click to capture the vehicle image</Text>
-        </TouchableOpacity>
+        <>
+            {!capture && <TouchableOpacity onPress={handleCapture} style={styles.button}>
+                <Text style={styles.buttonText}>Click to capture the vehicle image</Text>
+            </TouchableOpacity>}
+        </>
+
     );
 }
 

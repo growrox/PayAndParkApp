@@ -14,7 +14,7 @@ const HelloPage = React.memo(() => {
   //     type: AUTH_LOG_IN_SUCCESS,
   //     payload: {
   //       token: '',
-  //       roleid: '',
+  //       role: '',
   //       name: '',
   //       phoneNo: '',
   //       userId: '',

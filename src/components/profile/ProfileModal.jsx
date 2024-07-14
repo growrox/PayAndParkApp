@@ -6,7 +6,7 @@ import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
 
 
-const ProfileModal = ({ modalVisible, setModalVisible }) => {
+const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHeaderText }) => {
     const { isClockedIn, userId, token, phoneNo, name } = useSelector(state => state.auth)
     const [isLoading, setLoading] = React.useState(false)
     const toast = useToast();
@@ -45,7 +45,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                     payload: {
                         token: "",
                         location: "",
-                        roleid: "",
+                        role: "",
                         phoneNo: "",
                         userId: "",
                         name: ""
@@ -98,7 +98,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                     payload: {
                         token: "",
                         location: "",
-                        roleid: "",
+                        role: "",
                         phoneNo: "",
                         userId: "",
                         name: ""
@@ -128,7 +128,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
             payload: {
                 token: "",
                 location: "",
-                roleid: "",
+                role: "",
                 phoneNo: "",
                 userId: "",
                 name: ""
@@ -152,16 +152,16 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                         <View style={styles.modalContent}>
                             <View style={styles.header}>
                                 <View style={styles.titleContainer}>
-                                    <Text style={styles.profileTitle}>Profile</Text>
-                                    <Text style={styles.assistanceTitle}>ASSISTANT</Text>
+                                    <Text style={styles.profileTitle}>{headerText}</Text>
+                                    <Text style={styles.assistanceTitle}>{secondaryHeaderText}</Text>
                                 </View>
                                 <View style={styles.rightHeader}>
-                                    <TouchableOpacity
+                                    {secondaryHeaderText === 'ASSISTANT' && <TouchableOpacity
                                         style={{ ...styles.statusButton, borderColor: isClockedIn ? '#28a745' : '#c71f1f' }}
                                         onPress={() => { }}
                                     >
                                         <Text style={{ ...styles.statusText, color: isClockedIn ? '#28a745' : '#c71f1f', }}>{isClockedIn ? 'Online' : 'Offline'}</Text>
-                                    </TouchableOpacity>
+                                    </TouchableOpacity>}
                                     <TouchableOpacity
                                         style={styles.closeButton}
                                         onPress={() => setModalVisible(!modalVisible)}
@@ -182,8 +182,8 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                                 <Text style={styles.phoneNumber}>{phoneNo}</Text>
                             </View>
 
-                            <View style={styles.buttonContainer}>
-                                <TouchableOpacity
+                            <View style={{ ...styles.buttonContainer, ...(secondaryHeaderText === 'ASSISTANT' ? { justifyContent: 'space-between' } : { justifyContent: 'center' }) }}>
+                                {(secondaryHeaderText !== 'SUPERVISOR' && secondaryHeaderText !== 'ACCOUNTANT') && <TouchableOpacity
                                     style={{ ...styles.clockInButton, backgroundColor: isClockedIn ? '#c71f1f' : '#28a745', }}
                                     disabled={isLoading}
                                     onPress={() => {
@@ -192,10 +192,13 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
                                 >
                                     {isLoading ? <ActivityIndicator size="small" color="#fff" /> :
                                         <Text disabled={isLoading} style={styles.clockInText}>{isClockedIn ? 'Clock Out' : 'Clock In'}</Text>}
-                                </TouchableOpacity>
+                                </TouchableOpacity>}
 
                                 <TouchableOpacity
-                                    style={styles.logoutButton}
+                                    style={{
+                                        ...styles.logoutButton, ...(secondaryHeaderText === 'ASSISTANT' ? { width: '45%', padding: 10 }
+                                            : { width: '90%', padding: 12 })
+                                    }}
                                     onPress={handleLogout}
                                 >
 
@@ -305,7 +308,6 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         width: '90%',
         marginTop: 10,
         marginBottom: 5
@@ -324,9 +326,7 @@ const styles = StyleSheet.create({
     logoutButton: {
         backgroundColor: '#007bff',
         borderRadius: 8,
-        padding: 10,
         alignItems: 'center',
-        width: '45%',
     },
     logoutButtonText: {
         fontSize: 14,

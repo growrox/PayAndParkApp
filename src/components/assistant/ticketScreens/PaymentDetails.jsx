@@ -8,15 +8,16 @@ import {
     StyleSheet,
     ScrollView
 } from 'react-native';
-import DashboardHeader from '../dashboard/DashboardHeader';
-import { url } from '../../utils/url';
+import DashboardHeader from '../../DashboardHeader';
+import { url } from '../../../utils/url';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
-import { AUTH_LOG_OUT } from '../../redux/types';
-import { CREATE_TICKET } from '../../redux/types';
+import { AUTH_LOG_OUT } from '../../../redux/types';
+import { CREATE_TICKET } from '../../../redux/types';
 import SuccessModal from './SuccessModal';
 import RazorpayCheckout from 'react-native-razorpay';
 import axios from "axios"
+import moment from 'moment';
 
 const PaymentDetails = ({ navigation, route }) => {
     const { userEnteredData } = route.params;
@@ -126,7 +127,7 @@ const PaymentDetails = ({ navigation, route }) => {
                 payload: {
                     token: "",
                     location: "",
-                    roleid: "",
+                    role: "",
                     phoneNo: "",
                     userId: "",
                     name: ""
@@ -193,6 +194,10 @@ const PaymentDetails = ({ navigation, route }) => {
             toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
         }
     };
+    useEffect(()=>{
+        console.log('moment().utcOffset("+05:30").format()',moment().utcOffset("+05:30").format());
+
+    },[])
 
     const handleConfirm = async () => {
         const { vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks } = details;
@@ -230,6 +235,8 @@ const PaymentDetails = ({ navigation, route }) => {
                 remarks,
                 onlineTransactionId: paymentMode === 'Online' ? paymentResult.ref_id : "",
                 name: details.name,
+                createdAtClient: moment().utcOffset("+05:30").format(),
+                address: userEnteredData.address,
                 isPass: details.isPass,
                 ...(duration === 'All Month Pass' ? { passId: details.passId } : {})
             };
@@ -276,7 +283,7 @@ const PaymentDetails = ({ navigation, route }) => {
 
     return (
         <>
-            <DashboardHeader headerText="Assistant" secondaryHeaderText="Profile" />
+            <DashboardHeader headerText={'Profile'} secondaryHeaderText={'ASSISTANT'} />
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.subHeader}>
                     <Text style={styles.subHeaderText}>Payment Details</Text>

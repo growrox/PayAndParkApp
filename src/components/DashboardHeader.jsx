@@ -23,7 +23,7 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
         <View style={styles.header}>
             <TouchableWithoutFeedback onPress={handleLogoPress}>
                 <Image
-                    source={require('../utils/images/Logo.png')}
+                    source={require('../utils/images/Logo-without-bg.png')}
                     style={styles.logo}
                 />
             </TouchableWithoutFeedback>
@@ -34,11 +34,11 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
                         source={require('../utils/images/profile-icon.png')}
                         style={styles.profileLogo}
                     />
-                    <View style={{ ...styles.greenIndicator, backgroundColor: isClockedIn ? 'green' : '#CB2027' }} />
+                    {secondaryHeaderText === 'ASSISTANT' && <View style={{ ...styles.greenIndicator, backgroundColor: isClockedIn ? 'green' : '#CB2027' }} />}
                 </View>
             </TouchableWithoutFeedback>
 
-            <ProfileModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
+            <ProfileModal secondaryHeaderText={secondaryHeaderText} headerText={headerText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
         </View>
     );
 }
@@ -49,11 +49,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 16,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#cacaca',
+        borderBottomColor: '#abaaaa',
+        borderBottomWidth: 1
     },
     logo: {
         width: 90,
-        height: 90,
+        height: 65,
         resizeMode: 'contain',
     },
     profileLogo: {
@@ -94,28 +96,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContent: {
-        width: '80%',
-        backgroundColor: 'white',
-        borderRadius: 8,
-        padding: 20,
-        alignItems: 'center',
-    },
-    modalImage: {
-        width: 100,
-        height: 100,
-        marginBottom: 20,
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    modalText: {
-        fontSize: 16,
-        textAlign: 'center',
-        marginBottom: 20,
     },
     closeButton: {
         backgroundColor: '#007bff',

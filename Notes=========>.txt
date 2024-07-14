@@ -26,7 +26,7 @@
    if payments gets failed need to show a popup with two buttons 1)  cancel ticket => to redirect to home page 2) regenerate payment
    
    todays(jul-1) payload:
-   {"name": "hasan", "phoneNo": "7218074913", "roleid": "", 
+   {"name": "hasan", "phoneNo": "7218074913", "role": "", 
    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjgxNTRjY2Q1NGU3NmIzMjMyN2YxYzciLCJyb2xlIjoiYXNzaXN0YW50Iiwic291cmNlIjoiYXBwIiwiaWF0IjoxNzE5ODUwNDc4LCJleHAiOjE3MTk4OTM2Nzh9.gadlRwC5pVM1GlDqTLCV1f78qONkGp6HgnhPs8Gx1qg", 
    "userId": "668154ccd54e76b32327f1c7"}
 
@@ -36,6 +36,25 @@
    for home page ticket search query: vehicle number, ticket no, status , selectedMode
 
 
-   jul-8 changes or updates
+   ** jul-8 changes or updates **
 
    if  response.status >= 500 then need to show data.error else data.message
+
+
+   ** jul-14 changes,notes or updates **
+
+   1) login details:
+   7218074913 => assistant
+   7218074914 => supervisor
+   7218074915 => accountant
+
+   2) settleTicket API:
+
+   3) about assistant page:
+
+   total payable = cash + reward + fine
+   total Rewards  = Total collections - Total fine
+
+   if (cash > total fine + total reward)  need to show a  error "please update a cash collection".
+
+   

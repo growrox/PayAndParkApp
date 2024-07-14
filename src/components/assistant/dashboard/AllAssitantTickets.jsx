@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet, TextInput, Image, FlatList } from 'react-native';
-import DashboardHeader from './DashboardHeader';
+import DashboardHeader from '../../DashboardHeader';
 import { useToast } from 'react-native-toast-notifications';
 import { useDispatch, useSelector } from 'react-redux';
-import { AUTH_LOG_OUT } from '../../redux/types';
-import { url } from '../../utils/url';
-import { Spinner } from '../../utils/Spinner';
+import { AUTH_LOG_OUT } from '../../../redux/types';
+import { url } from '../../../utils/url';
+import { Spinner } from '../../../utils/Spinner';
 import moment from 'moment';
 
 export default function AllAssitantTickets({ navigation }) {
@@ -53,7 +53,7 @@ export default function AllAssitantTickets({ navigation }) {
                     payload: {
                         token: "",
                         location: "",
-                        roleid: "",
+                        role: "",
                         phoneNo: "",
                         userId: "",
                         name: ""
@@ -128,10 +128,10 @@ export default function AllAssitantTickets({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <DashboardHeader headerText={'Assistant'} secondaryHeaderText={'Profile'} />
+            <DashboardHeader headerText={'Profile'} secondaryHeaderText={'ASSISTANT'} />
             <View style={styles.searchContainer}>
                 <View style={styles.searchContainerChild}>
-                    <Image source={require('../../utils/images/search.png')} style={styles.searchLogo} />
+                    <Image source={require('../../../utils/images/search.png')} style={styles.searchLogo} />
                     <TextInput
                         style={styles.searchBar}
                         placeholder="Search"

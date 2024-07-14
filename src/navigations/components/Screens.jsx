@@ -1,27 +1,29 @@
 import React, { useEffect } from 'react'
 import { createStackNavigator } from '@react-navigation/stack';
-import Home from '../../components/dashboard/Home';
+import AssistantHome from '../../components/assistant/dashboard/Home';
+import SupervisorHome from '../../components/supervisor/dashboard/Home';
 import AuthStack from './AuthStack';
 import { useSelector } from 'react-redux';
 // import { clearPersistedState } from '../../utils/clearPersistedState';
 import DrawerNavigator from './Drawer/DrawerNavigator';
-import PaymentDetails from '../../components/ticketScreens/PaymentDetails';
-import VehicleType from '../../components/ticketScreens/VehicleType';
-import TimeSlot from '../../components/ticketScreens/TimeSlot';
-import VehiclePaymentEntry from '../../components/ticketScreens/VehiclePaymentEntry';
-import AllAssitantTickets from '../../components/dashboard/AllAssitantTickets';
+import PaymentDetails from '../../components/assistant/ticketScreens/PaymentDetails';
+import VehicleType from '../../components/assistant/ticketScreens/VehicleType';
+import TimeSlot from '../../components/assistant/ticketScreens/TimeSlot';
+import VehiclePaymentEntry from '../../components/assistant/ticketScreens/VehiclePaymentEntry';
+import AllAssitantTickets from '../../components/assistant/dashboard/AllAssitantTickets';
+import AssistantPage from '../../components/supervisor/assistanDetail/AssistantPage';
 
 
 const Stack = createStackNavigator();
 
 
 export default function Screens() {
-    const { isAuthenticated } = useSelector(state => state.auth)
+    const { isAuthenticated, role } = useSelector(state => state.auth)
 
     const StackScreensAuthenticated = [
         {
             screen: "Home",
-            component: Home
+            component: role === 'assistant' ? AssistantHome : SupervisorHome
         },
         {
             screen: 'VehicleType',
@@ -42,6 +44,10 @@ export default function Screens() {
         {
             screen: 'AllAssitantTickets',
             component: AllAssitantTickets
+        },
+        {
+            screen: 'AssistantPage',
+            component: AssistantPage
         },
 
     ]

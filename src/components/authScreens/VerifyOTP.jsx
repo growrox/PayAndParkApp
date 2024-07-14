@@ -62,7 +62,7 @@ const VerifyOTP = ({ navigation, route }) => {
 
             const data = await response.json();
 
-            // console.log('data of response.......', data);
+            console.log('data of response verifyOTP.......', data);
             // console.log('response.status', response.status);
 
             if (data.attempts === 0) return navigation.navigate('Login');
@@ -73,7 +73,7 @@ const VerifyOTP = ({ navigation, route }) => {
                     type: AUTH_LOG_IN_SUCCESS,
                     payload: {
                         token: data.token,
-                        roleid: '',
+                        role: data.role,
                         name: data.name,
                         phoneNo: phoneNo,
                         userId: data.userId,
@@ -86,7 +86,7 @@ const VerifyOTP = ({ navigation, route }) => {
                     payload: {
                         token: "",
                         location: "",
-                        roleid: "",
+                        role: "",
                         phoneNo: "",
                         userId: "",
                         name: ""

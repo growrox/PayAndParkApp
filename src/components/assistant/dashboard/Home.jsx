@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image, ActivityIndicator, PermissionsAndroid } from 'react-native';
-import DashboardHeader from './DashboardHeader';
+import DashboardHeader from '../../DashboardHeader';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
-import { url } from '../../utils/url';
-import { Spinner } from '../../utils/Spinner';
-import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
+import { url } from '../../../utils/url';
+import { Spinner } from '../../../utils/Spinner';
+import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../../redux/types';
 import moment from 'moment';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
@@ -91,7 +91,7 @@ export default function Home({ navigation }) {
           payload: {
             token: "",
             location: "",
-            roleid: "",
+            role: "",
             phoneNo: "",
             userId: "",
             name: ""
@@ -146,7 +146,7 @@ export default function Home({ navigation }) {
           payload: {
             token: "",
             location: "",
-            roleid: "",
+            role: "",
             phoneNo: "",
             userId: "",
             name: ""
@@ -201,7 +201,7 @@ export default function Home({ navigation }) {
           payload: {
             token: "",
             location: "",
-            roleid: "",
+            role: "",
             phoneNo: "",
             userId: "",
             name: ""
@@ -242,7 +242,7 @@ export default function Home({ navigation }) {
           payload: {
             token: "",
             location: "",
-            roleid: "",
+            role: "",
             phoneNo: "",
             userId: "",
             name: ""
@@ -278,8 +278,8 @@ export default function Home({ navigation }) {
     <View style={styles.container}>
       {/* Your existing UI */}
       <DashboardHeader
-        headerText={'Assistant'}
-        secondaryHeaderText={'Profile'}
+        headerText={'Profile'}
+        secondaryHeaderText={'ASSISTANT'}
       />
       {isLoading ? (
         <Spinner
@@ -297,7 +297,7 @@ export default function Home({ navigation }) {
             <View style={styles.collectionCard}>
               <View style={styles.cardRow}>
                 <Image
-                  source={require('../../utils/images/homeAssistant/rupee.png')}
+                  source={require('../../../utils/images/homeAssistant/rupee.png')}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle}>Cash Collection</Text>
@@ -306,7 +306,7 @@ export default function Home({ navigation }) {
 
               <View style={styles.cardRow}>
                 <Image
-                  source={require('../../utils/images/homeAssistant/credit-card.png')}
+                  source={require('../../../utils/images/homeAssistant/credit-card.png')}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle}>Online Collection</Text>
@@ -338,7 +338,7 @@ export default function Home({ navigation }) {
             <View style={[styles.BonusCard, styles.bonusContainer]}>
               <View style={styles.cardRow}>
                 <Image
-                  source={require('../../utils/images/homeAssistant/star.png')}
+                  source={require('../../../utils/images/homeAssistant/star.png')}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle}>Bonus</Text>

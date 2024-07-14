@@ -4,7 +4,7 @@ import HelloPage from "../../components/authScreens/HelloPage";
 import Signup from "../../components/authScreens/Signup";
 import Login from "../../components/authScreens/Login";
 import VerifyOTP from "../../components/authScreens/VerifyOTP";
-import Home from "../../components/dashboard/Home";
+import Home from "../../components/assistant/dashboard/Home";
 
 const Stack = createNativeStackNavigator();
 

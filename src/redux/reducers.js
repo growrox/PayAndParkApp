@@ -3,19 +3,21 @@ import {
     AUTH_LOG_IN_SUCCESS,
     AUTH_SIGN_UP_SUCCESS,
     CREATE_TICKET,
-    ASSISTANT_CLOCK
+    ASSISTANT_CLOCK,
+    SUPER_SETTLED_AMOUNT
 } from "./types";
 
 const authInitialState = {
     loading: false,
     isAuthenticated: false,
     token: "",
-    roleid: "",
+    role: "",
     phoneNo: "",
     userId: "",
     name: "",
     isTicketCreated: false,
-    isClockedIn: false
+    isClockedIn: false,
+    isTicketSuperVisorSettled: false
 };
 
 
@@ -30,7 +32,7 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 loading: false,
                 isAuthenticated: true,
                 token: payload.token,
-                roleid: payload.roleid,
+                role: payload.role,
                 phoneNo: payload.phoneNo,
                 userId: payload.userId,
                 name: payload.name
@@ -42,7 +44,7 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 loading: false,
                 isAuthenticated: true,
                 token: payload.token,
-                roleid: payload.roleid,
+                role: payload.role,
                 phoneNo: payload.phoneNo,
                 userId: payload.userId,
                 name: payload.name
@@ -54,7 +56,7 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 isAuthenticated: false,
                 token: "",
                 location: "",
-                roleid: "",
+                role: "",
                 phoneNo: "",
                 userId: "",
                 name: ""
@@ -71,6 +73,12 @@ const authReducer = (state = authInitialState, { type, payload }) => {
             return {
                 ...state,
                 isClockedIn: payload.isClockedIn,
+            };
+        }
+        case SUPER_SETTLED_AMOUNT: {
+            return {
+                ...state,
+                isTicketSuperVisorSettled: payload.isTicketSuperVisorSettled,
             };
         }
 

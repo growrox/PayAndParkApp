@@ -1,6 +1,6 @@
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import Home from '../../../components/dashboard/Home';
-import CreateTicket from '../../../components/ticketScreens/PaymentDetails';
+import Home from '../../../components/assistant/dashboard/Home';
+import CreateTicket from '../../../components/assistant/ticketScreens/PaymentDetails';
 
 import React from 'react'
 
