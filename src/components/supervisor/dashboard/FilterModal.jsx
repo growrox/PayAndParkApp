@@ -105,7 +105,7 @@ const FilterModal = ({ isVisible, onClose, shiftFilters, handleApplyFilters, sel
                             </View>
                         ))}
                         <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-                            <Text style={styles.clearButtonText}>Remove Filter</Text>
+                            <Text style={styles.clearButtonText}>Remove Filters</Text>
                         </TouchableOpacity>
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity style={styles.button} onPress={handleApplyFilters}>

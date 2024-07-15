@@ -495,7 +495,10 @@ export default function Home({ navigation }) {
             </View>
           </View>
           <View style={styles.bottomRow}>
-            <Text style={styles.lastCollection}>Last Collection - {moment(item.lastSettled).format('DD-MMM-yyy')}</Text>
+            <Text style={styles.lastCollection}>
+              Last Collection - {item.lastSettled ? moment(item.lastSettled).format('DD-MMM-yyy') : 'No settlement yet'}
+            </Text>
+
             <Text style={styles.shift}>{item.shiftDetails.name}</Text>
           </View>
         </View>

@@ -314,8 +314,8 @@ export default function AssistantPage({ navigation, route }) {
               </View>
             </View>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={() => { }} style={[styles.button, { backgroundColor: '#D9D9D9', }]}>
-                <Text style={{ ...styles.buttonText, color: '#000' }} onPress={() => setModalVisible(true)}>Update Cash</Text>
+              <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.button, { backgroundColor: '#D9D9D9', }]}>
+                <Text style={{ ...styles.buttonText, color: '#000' }} >Update Cash</Text>
               </TouchableOpacity>
               <TouchableOpacity disabled={isSettling} onPress={handleSettleAmount} style={{ ...styles.button, backgroundColor: '#223C83', ...(isSettling && { opacity: 0.5 }) }}>
                 <Text style={styles.buttonText}>Settle Amount</Text>
