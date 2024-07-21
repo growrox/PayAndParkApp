@@ -9,10 +9,11 @@ import CustomCheckbox from '../../CustomCheckbox';
 import AssistantHeader from './AssistantHeader';
 import CashUpdateModal from './CashUpdateModal';
 import { SUPER_SETTLED_AMOUNT } from '../../../redux/types';
+import { AUTH_LOG_OUT } from '../../../redux/types';
 
 export default function AssistantPage({ navigation, route }) {
   const { assistantData } = route.params
-  const { token, userId, isTicketSuperVisorSettled } = useSelector((store) => store.auth)
+  const { token, userId, isTicketSuperVisorSettled, role } = useSelector((store) => store.auth)
   const dispatch = useDispatch();
   const toast = useToast();
   const [assistantPageStats, setAssistantStats] = useState({
@@ -76,18 +77,22 @@ export default function AssistantPage({ navigation, route }) {
       });
 
       const data = await response.json();
-      console.log('fetchAssistantPageStats data', data);
-      const rewardMoney = (data.result.TotalCash - assistantPageStats.finePaid) > 2000 ? 200 : 0
-      if (response.status === 200) {
+      console.log('fetchAssistantPageStats data:', data);
+      console.log('fetchAssistantPageStats status:', response.status);
+      if (response.status == 200) {
+        const rewardMoney = (data?.result?.TotalCash - assistantPageStats?.finePaid) > 2000 ? 200 : 0
+        console.log("hit 200...........");
+
         setAssistantStats({
           cashCollection: data.result.TotalCash,
           onlineCollection: data.result.TotalOnline,
           rewardPaid: rewardMoney,
           finePaid: 0,
-          totalPayable: data.result.TotalCash + rewardMoney + assistantPageStats.finePaid,
+          totalPayable: data.result.TotalCash - (rewardMoney + assistantPageStats.finePaid),
           totalCollection: data.result.TotalAmount,
         })
       } else if (response.status === 401 || response.status === 406) {
+        console.log("hit 406...........");
         dispatch({
           type: AUTH_LOG_OUT,
           payload: {
@@ -117,10 +122,11 @@ export default function AssistantPage({ navigation, route }) {
   const handleSettleAmount = async () => {
     try {
       setSettling(true)
-      const cashObject = cashData.reduce((acc, d) => {
-        acc[d.denomination] = d.count;
-        return acc;
-      }, {});
+
+      const cashObject = cashData.map((d, i) => ({
+        denomination: d.denomination,
+        count: d.count
+      }))
       // console.log("assistantPageStats.", typeof assistantPageStats.cashCollection, "   ", typeof assistantPageStats.finePaid, "  ",
       //   typeof assistantPageStats.rewardPaid, "  ", typeof assistantPageStats.cashCollection, "  ", typeof calculateTotal());
       // console.log("(calculateTotal() + assistantPageStats.finePaid + assistantPageStats.rewardPaid)", (calculateTotal() + assistantPageStats.finePaid + assistantPageStats.rewardPaid));
@@ -153,13 +159,14 @@ export default function AssistantPage({ navigation, route }) {
       console.log("totalCollectedAmount...........", totalCollectedAmount);
       const apiData = {
         supervisorID: userId,
-        CashComponent: { ...cashObject, Total: +calculateTotal() },
+        cashComponent: cashObject,
+        cashCollected: +calculateTotal(),
         totalCollection: +assistantPageStats.totalCollection,
         totalCollectedAmount: +totalCollectedAmount,
         TotalFine: +assistantPageStats.finePaid || 0,
         TotalRewards: +assistantPageStats.rewardPaid
       }
-      console.log("apiData", apiData);
+      console.log("apiData................", apiData);
       const response = await fetch(`${url}/api/v1/supervisor/settle-tickets/${assistantData._id}`, {
         method: 'POST',
         headers: {
@@ -217,8 +224,9 @@ export default function AssistantPage({ navigation, route }) {
   const handleFineAmountChange = (_v) => {
     setAssistantStats((prev) => ({
       ...prev,
-      finePaid: _v
+      finePaid: _v,
     }))
+
   }
 
 
@@ -265,12 +273,12 @@ export default function AssistantPage({ navigation, route }) {
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle}>Total Rewards</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.finePaid} RS</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.rewardPaid} RS</Text>
               </View>}
               <View style={styles.separator} />
               <View style={styles.cardRow}>
                 <Text style={styles.cardTitle}>Total Payable</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.totalPayable} RS</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.totalPayable - assistantPageStats.finePaid} RS</Text>
               </View>
               <View style={styles.cardRow}>
                 <Text style={styles.cardTitle}>Total Collection</Text>
@@ -279,7 +287,7 @@ export default function AssistantPage({ navigation, route }) {
             </View>
             <View style={styles.customCheckboxContainer}>
               <CustomCheckbox
-                title="Parking Assistance Fine"
+                title="Parking Assistant Fine"
                 isChecked={fineChecked}
                 onPress={() => setFineChecked(!fineChecked)}
               />
@@ -314,8 +322,8 @@ export default function AssistantPage({ navigation, route }) {
               </View>
             </View>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.button, { backgroundColor: '#D9D9D9', }]}>
-                <Text style={{ ...styles.buttonText, color: '#000' }} >Update Cash</Text>
+              <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.button, { backgroundColor: '#D9D9D9', marginRight: 10, }]}>
+                <Text style={{ ...styles.buttonText, color: '#000', }} >Update Cash</Text>
               </TouchableOpacity>
               <TouchableOpacity disabled={isSettling} onPress={handleSettleAmount} style={{ ...styles.button, backgroundColor: '#223C83', ...(isSettling && { opacity: 0.5 }) }}>
                 <Text style={styles.buttonText}>Settle Amount</Text>
@@ -467,12 +475,16 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   button: {
-    padding: 8,
-    paddingRight: 40,
-    paddingLeft: 40,
+    flex: 1,
+    paddingVertical: 9,
     borderRadius: 5,
+    maxWidth: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',

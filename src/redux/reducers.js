@@ -17,7 +17,8 @@ const authInitialState = {
     name: "",
     isTicketCreated: false,
     isClockedIn: false,
-    isTicketSuperVisorSettled: false
+    isTicketSuperVisorSettled: false,
+    shiftDetails: {},
 };
 
 
@@ -73,6 +74,7 @@ const authReducer = (state = authInitialState, { type, payload }) => {
             return {
                 ...state,
                 isClockedIn: payload.isClockedIn,
+                shiftDetails: payload.shiftDetails
             };
         }
         case SUPER_SETTLED_AMOUNT: {

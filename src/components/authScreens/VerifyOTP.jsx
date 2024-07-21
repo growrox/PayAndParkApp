@@ -166,8 +166,11 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 48,
         width: 320,
+        height: 45,
         borderRadius: 8,
         marginBottom: 16,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     signInButtonText: {
         color: 'white',

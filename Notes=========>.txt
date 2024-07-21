@@ -57,4 +57,18 @@
 
    if (cash > total fine + total reward)  need to show a  error "please update a cash collection".
 
+
+jul-21
+
+{
+    "message": "Here is supervisor stats.",
+    "result": {
+        "TotalCollection": 85,
+        "TotalCollectedAmount": 83,
+        "TotalFine": 2,
+        "TotalReward": 0,
+        "TotalTicketsCount": 2,
+        "LastSettledTicketUpdatedAt": null
+    }
+}
    

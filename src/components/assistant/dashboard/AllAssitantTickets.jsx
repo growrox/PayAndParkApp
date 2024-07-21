@@ -25,23 +25,21 @@ export default function AllAssitantTickets({ navigation }) {
 
     const fetchAllTickets = async (page) => {
         try {
-            const response = await fetch(`${url}/api/v1/parking-assistant/tickets?pageNumber=${page}&searchQuery=${searchQuery}`, {
+            let pageSize = 10;
+            const response = await fetch(`${url}/api/v1/parking-assistant/tickets?page=${page}&pageSize=${pageSize}&searchQuery=${searchQuery}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
                     'userId': userId,
                     'Authorization': `Bearer ${token}`,
-                    'page_limit': 10,
                 },
             });
 
             const data = await response?.json();
             console.log('parking-tickets data', data);
 
-            if (data.message === "No tickets found") {
-                return setNoData(true);
-            }
+
 
             if (response.status === 200) {
                 if (data?.result && data?.result?.data) {
@@ -65,7 +63,9 @@ export default function AllAssitantTickets({ navigation }) {
                 toast.show(messageData, { type: toastType, placement: 'top' });
                 // console.log('response.status data.message  data.error', response.status, data.message, data.error)
             }
-
+            if (data.message === "No tickets found" || data?.result?.data?.length !== pageSize) {
+                return setNoData(true);
+            }
 
         } catch (error) {
             toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });

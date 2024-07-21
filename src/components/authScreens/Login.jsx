@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Text, TouchableOpacity, TextInput, View, StyleSheet, ActivityIndicator } from 'react-native';
 import MainComponent from './MainComponent';
 import { useNavigation } from '@react-navigation/native';
+import { AUTH_LOG_OUT } from '../../redux/types';
 import { useToast } from "react-native-toast-notifications";
 import { url } from '../../utils/url';
 
@@ -128,8 +129,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 48,
     width: 320,
+    height: 45,
     borderRadius: 8,
     marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   signInButtonText: {
     color: 'white',

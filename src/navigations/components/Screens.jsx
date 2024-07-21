@@ -12,6 +12,7 @@ import TimeSlot from '../../components/assistant/ticketScreens/TimeSlot';
 import VehiclePaymentEntry from '../../components/assistant/ticketScreens/VehiclePaymentEntry';
 import AllAssitantTickets from '../../components/assistant/dashboard/AllAssitantTickets';
 import AssistantPage from '../../components/supervisor/assistanDetail/AssistantPage';
+import SupervisorPage from '../../components/supervisor/supervisorDetail/SupervisorPage';
 
 
 const Stack = createStackNavigator();
@@ -19,6 +20,9 @@ const Stack = createStackNavigator();
 
 export default function Screens() {
     const { isAuthenticated, role } = useSelector(state => state.auth)
+    // useEffect(() => {
+    //     console.log(`isAuthenticated: ${isAuthenticated} , role: ${role}`);
+    // }, [])
 
     const StackScreensAuthenticated = [
         {
@@ -48,6 +52,10 @@ export default function Screens() {
         {
             screen: 'AssistantPage',
             component: AssistantPage
+        },
+        {
+            screen: 'SupervisorPage',
+            component: SupervisorPage
         },
 
     ]

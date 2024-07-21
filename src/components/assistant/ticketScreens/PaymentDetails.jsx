@@ -16,7 +16,6 @@ import { AUTH_LOG_OUT } from '../../../redux/types';
 import { CREATE_TICKET } from '../../../redux/types';
 import SuccessModal from './SuccessModal';
 import RazorpayCheckout from 'react-native-razorpay';
-import axios from "axios"
 import moment from 'moment';
 
 const PaymentDetails = ({ navigation, route }) => {
@@ -38,6 +37,7 @@ const PaymentDetails = ({ navigation, route }) => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     useEffect(() => {
+        // console.log("userEnteredData", userEnteredData);
         if (userEnteredData) {
             if (userEnteredData.type === 'ticketDetailsPreview') {
                 setDetails({
@@ -164,7 +164,7 @@ const PaymentDetails = ({ navigation, route }) => {
                 handleErrorResponse(response, data);
             }
         } catch (error) {
-            toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+            toast.show(`Error from deleteOrder: ${error.message}`, { type: 'danger', placement: 'top' });
         }
     };
 
@@ -191,13 +191,13 @@ const PaymentDetails = ({ navigation, route }) => {
                 handleErrorResponse(response, data);
             }
         } catch (error) {
-            toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+            toast.show(`Error from successPayment: ${error.message}`, { type: 'danger', placement: 'top' });
         }
     };
-    useEffect(()=>{
-        console.log('moment().utcOffset("+05:30").format()',moment().utcOffset("+05:30").format());
+    // useEffect(() => {
+    //     console.log('moment().utcOffset("+05:30").format()', moment().utcOffset("+05:30").format());
 
-    },[])
+    // }, [])
 
     const handleConfirm = async () => {
         const { vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks } = details;
@@ -276,8 +276,8 @@ const PaymentDetails = ({ navigation, route }) => {
                 handleErrorResponse(response, data);
             }
         } catch (error) {
-            console.error('Error:', error);
-            toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+            console.error('Error from handleConfirm:', error);
+            toast.show(`Error from handleConfirm: ${error.message}`, { type: 'danger', placement: 'top' });
         }
     };
 

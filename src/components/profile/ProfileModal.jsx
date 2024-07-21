@@ -7,7 +7,7 @@ import { url } from '../../utils/url';
 
 
 const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHeaderText }) => {
-    const { isClockedIn, userId, token, phoneNo, name } = useSelector(state => state.auth)
+    const { isClockedIn, userId, token, phoneNo, name, shiftDetails, role } = useSelector(state => state.auth)
     const [isLoading, setLoading] = React.useState(false)
     const toast = useToast();
     const dispatch = useDispatch();
@@ -35,6 +35,7 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                     type: ASSISTANT_CLOCK,
                     payload: {
                         isClockedIn: true,
+                        shiftDetails: shiftDetails
                     }
                 });
                 toast.show(data.message, { type: 'success', placement: 'top' });
@@ -89,6 +90,8 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                     type: ASSISTANT_CLOCK,
                     payload: {
                         isClockedIn: false,
+                        shiftDetails: shiftDetails
+
                     }
                 });
                 toast.show(data.message, { type: 'success', placement: 'top' });
@@ -180,7 +183,14 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                                     style={styles.phoneIcon}
                                 />
                                 <Text style={styles.phoneNumber}>{phoneNo}</Text>
+
                             </View>
+
+                            {role === 'assistant' && <><Text style={{ ...styles.phoneNumber, fontWeight: "700", fontSize: 13 }}>{shiftDetails?.name}</Text>
+                                <View style={{ ...styles.phoneNumberContainer, marginTop: 2 }}>
+                                    <Text style={styles.phoneNumber}> <Text style={{ fontWeight: '700' }}>Start:</Text> {shiftDetails?.startTime}  </Text>
+                                    <Text style={styles.phoneNumber}><Text style={{ fontWeight: '700' }}> End: </Text>{shiftDetails?.endTime}</Text>
+                                </View></>}
 
                             <View style={{ ...styles.buttonContainer, ...(secondaryHeaderText === 'ASSISTANT' ? { justifyContent: 'space-between' } : { justifyContent: 'center' }) }}>
                                 {(secondaryHeaderText !== 'SUPERVISOR' && secondaryHeaderText !== 'ACCOUNTANT') && <TouchableOpacity
@@ -295,7 +305,7 @@ const styles = StyleSheet.create({
     phoneNumberContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 25,
+        marginBottom: 20,
     },
     phoneIcon: {
         width: 11,

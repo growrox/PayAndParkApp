@@ -5,31 +5,35 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../../utils/url';
 import { Spinner } from '../../../utils/Spinner';
-// import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../../redux/types';
+import { AUTH_LOG_OUT } from '../../../redux/types';
 import FilterModal from './FilterModal';
 import moment from 'moment';
 
 export default function Home({ navigation }) {
-  const { token, userId, isTicketSuperVisorSettled } = useSelector(state => state.auth);
+  const { token, userId, isTicketSuperVisorSettled, role } = useSelector(state => state.auth);
   const dispatch = useDispatch();
   const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusQuery, setStatusQuery] = useState('');
-  const [supervisorStats, setSupervisorStats] = useState({
+  const [homePageStats, setHomePageStats] = useState({
     cashCollection: '0',
     rewardPaid: '0',
     finePaid: '0',
     totalPayable: '0',
+    totalCollection: '0'
   });
-  const [isLoading, setLoading] = useState(true);
-  const [isLoadingAssistData, setLoadingAssistData] = useState(false)
+  const [isFetchingMore, setFetchingMore] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [isNoData, setNoData] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [isLoadingAssistData, setLoadingAssistData] = useState(true)
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
-  const [parkingAssistants, setParkingAssistant] = useState([])
+  const [supOrAccData, setSupOrAccData] = useState([])
   const [selectedShiftFilter, setSelectedShiftFilter] = useState('');
   const [shiftFilters, setShiftFilters] = useState([])
   const searchTimer = useRef(null);
 
-  // const [parkingAssistants, setParkingAssistant] = useState([
+  // const [supOrAccData, setParkingAssistant] = useState([
 
   //   {
   //     "_id": "668154ccd54e76eb32327f1c7",
@@ -306,10 +310,14 @@ export default function Home({ navigation }) {
   };
 
   useEffect(() => {
-    fetchSupervisorStats()
-    fetchFilters()
-    fetchParkingAssistants()
-  }, [isTicketSuperVisorSettled])
+    fetchHomeStats()
+    if (role === 'supervisor') {
+      fetchFilters()
+      fetchParkingAssistants()
+    } else {
+      fetchSuperVisors(pageNumber)
+    }
+  }, [isTicketSuperVisorSettled, pageNumber])
 
   useEffect(() => {
 
@@ -319,33 +327,47 @@ export default function Home({ navigation }) {
     };
 
     debounce(() => {
-      fetchParkingAssistants();
+      if (role === 'supervisor') {
+
+        fetchParkingAssistants();
+      } else {
+        fetchSuperVisors(1)
+      }
     }, 500);
 
     return () => clearTimeout(searchTimer.current);
   }, [searchQuery]);
 
-  const fetchSupervisorStats = async () => {
+  const fetchHomeStats = async () => {
     try {
-      const response = await fetch(`${url}/api/v1/supervisor/stats/${userId}`, {
+      const response = await fetch(`${url}/api/v1/${role === 'accountant' ? "accountant" : "supervisor"}/stats/${userId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
-          'userId': userId,
-          'Authorization': `Bearer ${token}`,
         },
       });
-
       const data = await response.json();
-      console.log('fetchSupervisorStats data', data);
+      console.log('fetchHomeStats data', data, "    ", response.status);
       if (response.status === 200) {
-        setSupervisorStats({
-          cashCollection: data.result.TotalCollectedAmount,
-          rewardPaid: data.result.TotalReward,
-          finePaid: data.result.TotalFine,
-          totalPayable: data.result.TotalCollectedAmount + data.result.TotalReward + data.result.TotalFine,
-        })
+        if (role === 'accountant') {
+          setHomePageStats({
+            cashCollection: '0',
+            totalPayable: '0',
+            rewardPaid: data.result.TotalReward,
+            finePaid: data.result.TotalFine,
+            totalCollection: data.result.TotalCollection
+          })
+        } else {
+          setHomePageStats({
+            cashCollection: data.result.cashCollected,
+            rewardPaid: data.result.TotalReward,
+            finePaid: data.result.TotalFine,
+            totalPayable: data.result.TotalCollectedAmount,
+            totalCollection: '0'
+          })
+        }
+
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
           type: AUTH_LOG_OUT,
@@ -373,8 +395,8 @@ export default function Home({ navigation }) {
     }
   }
 
+
   const fetchParkingAssistants = async () => {
-    setLoadingAssistData(true)
     try {
       let queryParams = '';
 
@@ -396,9 +418,9 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('fetchParkingAssistants data', data);
+      console.log('fetchParkingAssistants data', data?.result?.assistants);
       if (response.status === 200) {
-        setParkingAssistant(data.result || [])
+        setSupOrAccData(data?.result?.assistants || [])
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
           type: AUTH_LOG_OUT,
@@ -423,6 +445,65 @@ export default function Home({ navigation }) {
       // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
       console.log('error.message', error.message);
       setLoadingAssistData(false);
+    }
+  }
+
+  const fetchSuperVisors = async (page) => {
+    console.log("page from fetch", page);
+    try {
+      let pageSize = 20;
+      const apiUrl = `${url}/api/v1/accountant/supervisors?searchQuery=${searchQuery}&page=${page}&pageSize=${pageSize}`;
+      console.log("apiUrl", apiUrl);
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': userId,
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      // console.log('fetchSuperVisors data', data);
+      // console.log("data.result.length", data?.result?.supervisors?.length);
+
+      if (response.status === 200) {
+        // console.log("fetchSuperVisors response.status", response.status);
+        // console.log("data?.result?.supervisors", data?.result?.supervisors);
+        setSupOrAccData(page === 1 ? data?.result?.supervisors : [...supOrAccData, ...data?.result?.supervisors]);
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            role: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        // console.log('messageData', messageData);
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+      }
+      if (data?.result?.supervisors?.length === 0 || data?.result?.supervisors?.length !== pageSize) {
+        // console.log("hit data?.result?.supervisors?.length 0");
+        return setNoData(true);
+      }
+    } catch (error) {
+      // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+      console.log('error.message', error.message);
+      setLoadingAssistData(false);
+      setFetchingMore(false);
+    } finally {
+      setLoadingAssistData(false);
+      setLoading(false);
+      setFetchingMore(false);
     }
   }
 
@@ -466,14 +547,14 @@ export default function Home({ navigation }) {
   }
 
   const onCardClick = (item) => {
-    navigation.navigate('AssistantPage', { assistantData: item })
-  }
+    console.log("onCardClick item", item);
+    if (role === 'accountant') {
+      navigation.navigate('SupervisorPage', { supervisorData: item })
 
-  // const loadMoreTickets = () => {
-  //   if (isNoData || isFetchingMore) return;
-  //   setFetchingMore(true);
-  //   setPageNumber(prevPage => prevPage + 1);
-  // };
+    } else {
+      navigation.navigate('AssistantPage', { assistantData: item })
+    }
+  }
 
   const renderTicket = ({ item, index }) => (
     <TouchableWithoutFeedback key={item._id} onPress={() => onCardClick(item)}>
@@ -485,7 +566,7 @@ export default function Home({ navigation }) {
                 require('../../../utils/images/homeSupervisor/userRed.png')}
               style={styles.avatar}
             />
-            <Text style={styles.userName}>{item.name}</Text>
+            <Text style={styles.userName}>{item?.name}</Text>
             <View style={styles.amountSection}>
               <Image
                 source={require('../../../utils/images/homeSupervisor/money.png')}
@@ -495,25 +576,81 @@ export default function Home({ navigation }) {
             </View>
           </View>
           <View style={styles.bottomRow}>
-            <Text style={styles.lastCollection}>
-              Last Collection - {item.lastSettled ? moment(item.lastSettled).format('DD-MMM-yyy') : 'No settlement yet'}
-            </Text>
-
-            <Text style={styles.shift}>{item.shiftDetails.name}</Text>
+            <View style={styles.lastCollectionContainer}>
+              <Text style={styles.lastCollection}>
+                Last Collection - {item.lastSettled ? moment(item.lastSettled).format('DD-MMM-yyy') : 'No settlement yet'}
+              </Text>
+            </View>
+            <Text style={styles.shift}>{item?.shiftDetails?.name}</Text>
           </View>
         </View>
       </View>
     </TouchableWithoutFeedback>
   );
 
+  const renderTicket2 = ({ item, index }) => (
+    <TouchableWithoutFeedback key={item._id} onPress={() => onCardClick(item)}>
+      <View style={{ paddingRight: 4, paddingLeft: 4 }}>
+        <View style={styles.userCard}>
+          <View style={styles.topRow}>
+            <Image
+              source={+item.totalCollectedAmount === 0 ? require('../../../utils/images/homeSupervisor/userGreen.png') : require('../../../utils/images/homeSupervisor/userRed.png')}
+              style={styles.avatar}
+            />
+            <Text style={{ ...styles.userName, color: +item.totalCollectedAmount === 0 ? 'green' : 'red' }}>{item?.name}</Text>
+            {/* <TouchableOpacity
+              style={{ ...styles.statusButton, borderColor: '#89FF5F' }}
+              onPress={() => { }}
+            >
+              <Text style={{ ...styles.statusText, color: '#89FF5F' }}>Online</Text>
+            </TouchableOpacity> */}
+          </View>
+          <View style={styles.bottomRow}>
+            <View style={styles.lastCollectionContainer}>
+              {/* <Image
+                source={require('../../../utils/images/homeAccountant/supervisorPage/calendar.png')}
+                style={styles.calendarIcon}
+              /> */}
+              <Text style={styles.lastCollection}>
+                Last settled {item.lastSettledDate ? moment(item?.lastSettledDate).format('DD-MMM-yyy') : 'No settlement yet'}
+              </Text>
+            </View>
+            <View style={styles.amountSection}>
+              <Image
+                source={require('../../../utils/images/homeSupervisor/money.png')}
+                style={styles.moneyIcon}
+              />
+              <Text style={styles.amount}>{item.totalCollectedAmount}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  )
+
+  const handleSearch = (text) => {
+    setSearchQuery(text)
+    setPageNumber(1);
+    setNoData(false)
+  }
+
   const handleApplyFilters = () => {
     toggleFilterModal();
     fetchParkingAssistants()
+    setLoadingAssistData(true)
+  };
+
+  const loadMoreSupervisors = () => {
+    console.log("hit loadMoreSupervisors");
+    if (role === 'supervisor') return;
+    if (isNoData || isFetchingMore) return;
+    setFetchingMore(true);
+    setPageNumber(prevPage => prevPage + 1);
   };
 
   return (
     <View style={styles.container}>
-      <DashboardHeader headerText={'Profile'} secondaryHeaderText={'SUPERVISOR'} />
+      <DashboardHeader headerText={'Profile'} secondaryHeaderText={role === "accountant" ? 'ACCOUNTANT' : 'SUPERVISOR'} />
       {isLoading ? (
         <Spinner size={50} bottomMargin={20} />
       ) : (
@@ -525,30 +662,32 @@ export default function Home({ navigation }) {
                   source={require('../../../utils/images/homeAssistant/rupee.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Cash Collection</Text>
-                <Text style={styles.cardAmount}>{supervisorStats.cashCollection} RS</Text>
+                <Text style={styles.cardTitle}>{role === 'accountant' ? "Cash Collected" : "Cash Collection"}</Text>
+                <Text style={styles.cardAmount}>{homePageStats.cashCollection} RS</Text>
               </View>
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/credit-card.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Reward Paid</Text>
-                <Text style={styles.cardAmount}>{supervisorStats.rewardPaid} RS</Text>
+                <Text style={styles.cardTitle}>{role === 'accountant' ? "Total Rewards" : "Reward Paid"}</Text>
+                <Text style={styles.cardAmount}>{homePageStats.rewardPaid} RS</Text>
               </View>
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/punishment.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Fine Paid</Text>
-                <Text style={styles.cardAmount}>{supervisorStats.finePaid} RS</Text>
+                <Text style={styles.cardTitle}>{role === 'accountant' ? "Total Fine" : "Fine Paid"}</Text>
+                <Text style={styles.cardAmount}>{homePageStats.finePaid} RS</Text>
               </View>
-              <View style={styles.separator} />
-              <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>Total Payable</Text>
-                <Text style={styles.cardAmount}>{supervisorStats.totalPayable} RS</Text>
-              </View>
+              {role === "supervisor" && <>
+                <View style={styles.separator} />
+                <View style={styles.cardRow}>
+                  <Text style={styles.cardTitle}>Total Payable</Text>
+                  <Text style={styles.cardAmount}>{homePageStats.totalPayable} RS</Text>
+                </View>
+              </>}
             </View>
             <View style={styles.searchContainerChild}>
               <Image
@@ -557,17 +696,17 @@ export default function Home({ navigation }) {
               />
               <TextInput
                 style={styles.searchBar}
-                placeholder="Find Parking Sathi"
+                placeholder={role === 'accountant' ? "Find Supervisor" : "Find Parking Sathi"}
                 placeholderTextColor={'grey'}
                 value={searchQuery}
-                onChangeText={(text) => setSearchQuery(text)}
+                onChangeText={handleSearch}
               />
-              <TouchableOpacity style={styles.filterIconContainer} onPress={toggleFilterModal}>
+              {role === 'supervisor' && <TouchableOpacity style={styles.filterIconContainer} onPress={toggleFilterModal}>
                 <Image
                   source={require('../../../utils/images/homeSupervisor/filter.png')}
                   style={styles.filterIcon}
                 />
-              </TouchableOpacity>
+              </TouchableOpacity>}
             </View>
 
             {isLoadingAssistData ? (
@@ -575,16 +714,15 @@ export default function Home({ navigation }) {
             ) : (
 
               <View style={{ marginTop: 5 }}>
-                {parkingAssistants?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
+                {supOrAccData?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={styles.phone}>No Assistant Found!</Text>
                 </View> : <FlatList
-                  data={parkingAssistants}
-                  renderItem={renderTicket}
+                  data={supOrAccData}
+                  renderItem={role === "accountant" ? renderTicket2 : renderTicket}
                   keyExtractor={(item) => item._id}
-                  // onEndReached={loadMoreTickets}
-                  // onEndReachedThreshold={0.5}
-                  // ListFooterComponent={isFetchingMore && <Spinner size={30} bottomMargin={10} />}
-
+                  onEndReached={loadMoreSupervisors}
+                  onEndReachedThreshold={role === 'accountant' ? 0.5 : null}
+                  ListFooterComponent={(isFetchingMore && role === 'accountant') && <Spinner size={30} bottomMargin={10} />}
                   contentContainerStyle={styles.flatListContent}
                 />}
               </View>
@@ -703,6 +841,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  lastCollectionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   lastCollection: {
     fontSize: 12,
     color: '#888',
@@ -745,5 +887,23 @@ const styles = StyleSheet.create({
   },
   flatListContent: {
     paddingBottom: 540,
+  },
+  calendarIcon: {
+    width: 18,
+    height: 18,
+    marginRight: 10,
+    marginLeft: 5
+  },
+  statusButton: {
+    borderWidth: 1.5,
+    paddingLeft: 4,
+    paddingBottom: 0.8,
+    paddingRight: 4,
+    paddingTop: 0.8,
+    borderRadius: 8,
+  },
+  statusText: {
+    fontWeight: '500',
+    fontSize: 10,
   },
 });

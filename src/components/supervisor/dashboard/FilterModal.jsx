@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 
 const FilterModal = ({ isVisible, onClose, shiftFilters, handleApplyFilters, selectedShiftFilter, setSelectedShiftFilter, statusQuery, setStatusQuery }) => {
+    const [isClear, setClear] = useState(false)
+    const isFirstRender = useRef(true);
 
     const toggleFilter = (filter) => {
         if (selectedShiftFilter === filter) {
@@ -22,7 +24,17 @@ const FilterModal = ({ isVisible, onClose, shiftFilters, handleApplyFilters, sel
     const clearFilters = () => {
         setSelectedShiftFilter('')
         setStatusQuery('')
+        setClear(prev => !prev)
     };
+
+    useEffect(() => {
+        if (!isFirstRender.current) {
+            // console.log("hhhhhhhhhhihhhhhhhhhhhhhihhhhhhhhhTTTTT");
+            handleApplyFilters();
+        } else {
+            isFirstRender.current = false;
+        }
+    }, [isClear]);
 
     const chunkArray = (arr, chunkSize) => {
         let index = 0;
@@ -148,7 +160,7 @@ const styles = StyleSheet.create({
     },
     filterButton: {
         paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: 4,
         borderRadius: 5,
         borderWidth: 1,
         borderColor: '#167afa',

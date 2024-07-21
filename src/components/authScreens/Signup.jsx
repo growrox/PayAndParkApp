@@ -4,6 +4,7 @@ import MainComponent from './MainComponent';
 import { useNavigation } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
+import { AUTH_LOG_OUT } from '../../redux/types';
 
 const Signup = () => {
   const navigation = useNavigation();
@@ -145,8 +146,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 48,
     width: 320,
+    height: 45,
     borderRadius: 8,
     marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   signUpButtonText: {
     color: 'white',

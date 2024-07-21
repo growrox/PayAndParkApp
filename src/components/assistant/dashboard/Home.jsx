@@ -185,14 +185,16 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-
+      console.log("data offetchUserClockDetails", data);
       if (response.status === 200) {
-        const { isOnline } = data.result
+        const { isOnline, shiftId } = data.result
         console.log('isOnline.........', isOnline);
+        console.log("shiftId", shiftId);
         dispatch({
           type: ASSISTANT_CLOCK,
           payload: {
             isClockedIn: isOnline,
+            shiftDetails: shiftId
           }
         });
       } else if (response.status === 401 || response.status === 406) {
@@ -373,7 +375,7 @@ export default function Home({ navigation }) {
                         <Text style={styles.ticketText}>Ticket #0{i + 1}</Text>
                         <Text style={styles.ticketText}>
                           {/* {moment(item.createdAt).format('MM/DD/YYYY h:mm')} */}
-                          {moment.utc(item.createdAt).local().format('MM/DD/YYYY h:mm A')}
+                          {moment.utc(item.createdAt).local().format('DD/MM/YY, h:mm A')}
                         </Text>
                       </View>
                       <View style={styles.separator} />
