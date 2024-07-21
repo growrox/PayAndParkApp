@@ -345,6 +345,7 @@ export default function Home({ navigation }) {
         headers: {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
+          'appDate': new Date()
         },
       });
       const data = await response.json();
