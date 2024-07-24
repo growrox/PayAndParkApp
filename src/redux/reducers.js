@@ -15,6 +15,7 @@ const authInitialState = {
     phoneNo: "",
     userId: "",
     name: "",
+    code: "",
     isTicketCreated: false,
     isClockedIn: false,
     isTicketSuperVisorSettled: false,
@@ -36,7 +37,8 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 role: payload.role,
                 phoneNo: payload.phoneNo,
                 userId: payload.userId,
-                name: payload.name
+                name: payload.name,
+                code: payload.code
             };
         }
         case AUTH_LOG_IN_SUCCESS: {
@@ -48,7 +50,8 @@ const authReducer = (state = authInitialState, { type, payload }) => {
                 role: payload.role,
                 phoneNo: payload.phoneNo,
                 userId: payload.userId,
-                name: payload.name
+                name: payload.name,
+                code: payload.code
             };
         }
         case AUTH_LOG_OUT: {

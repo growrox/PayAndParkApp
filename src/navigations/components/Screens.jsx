@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { createStackNavigator } from '@react-navigation/stack';
 import AssistantHome from '../../components/assistant/dashboard/Home';
-import SupervisorHome from '../../components/supervisor/dashboard/Home';
+import SupervisorHome from '../../components/supervisorAndAccountant/dashboard/Home';
 import AuthStack from './AuthStack';
 import { useSelector } from 'react-redux';
 // import { clearPersistedState } from '../../utils/clearPersistedState';
@@ -11,8 +11,8 @@ import VehicleType from '../../components/assistant/ticketScreens/VehicleType';
 import TimeSlot from '../../components/assistant/ticketScreens/TimeSlot';
 import VehiclePaymentEntry from '../../components/assistant/ticketScreens/VehiclePaymentEntry';
 import AllAssitantTickets from '../../components/assistant/dashboard/AllAssitantTickets';
-import AssistantPage from '../../components/supervisor/assistanDetail/AssistantPage';
-import SupervisorPage from '../../components/supervisor/supervisorDetail/SupervisorPage';
+import AssistantPage from '../../components/supervisorAndAccountant/assistanDetail/AssistantPage';
+import SupervisorPage from '../../components/supervisorAndAccountant/supervisorDetail/SupervisorPage';
 
 
 const Stack = createStackNavigator();

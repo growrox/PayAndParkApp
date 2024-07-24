@@ -353,11 +353,11 @@ export default function Home({ navigation }) {
       if (response.status === 200) {
         if (role === 'accountant') {
           setHomePageStats({
-            cashCollection: '0',
+            cashCollection: data.result.cashCollected,
             totalPayable: '0',
-            rewardPaid: data.result.TotalReward,
-            finePaid: data.result.TotalFine,
-            totalCollection: data.result.TotalCollection
+            rewardPaid: data.result.totalReward,
+            finePaid: data.result.totalFine,
+            totalCollection: data.result.totalCollectedAmount
           })
         } else {
           setHomePageStats({

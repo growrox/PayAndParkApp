@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import * as ImagePicker from "react-native-image-picker";
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { url } from '../../../../utils/url';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { Image } from 'react-native-compressor';
+
 
 export default function CameraCapture({ onCapture, setIsCapturing }) {
     const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
@@ -12,105 +14,113 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
 
 
     const handleCapture = async () => {
-        setIsCapturing(true)
-        const options = {
-            mediaType: 'photo',
-            maxWidth: 300,
-            maxHeight: 550,
-            quality: 1,
-            saveToPhotos: true,
-        };
-
-        let permissionStatus;
-        if (Platform.OS === 'android') {
-            permissionStatus = await request(PERMISSIONS.ANDROID.CAMERA);
-        } else {
-            permissionStatus = await request(PERMISSIONS.IOS.CAMERA);
-        }
-
-        if (permissionStatus === RESULTS.GRANTED) {
-            // launchCamera = () => {
-            let options = {
-                storageOptions: {
-                    skipBackup: true,
-                    path: 'images',
-                },
-            };
+        try {
+            setIsCapturing(true)
             setCapture(true)
-            ImagePicker.launchCamera(options, async (response) => {
-                setTimeout(() => {
-                    setCapture(false)
-                }, 2000)
-                if (response.didCancel) {
-                    // console.log('User cancelled image picker by pressing back button');
+            // const options = {
+            //     mediaType: 'photo',
+            //     maxWidth: 300,
+            //     maxHeight: 550,
+            //     quality: 1,
+            //     saveToPhotos: true,
+            // };
 
-                } else if (response.error) {
-                    console.log('ImagePicker Error: ', response.error);
-                } else if (response.customButton) {
-                    // console.log('User selected custom button: ', response.customButton);
-                    // Alert.alert(response.customButton);
-                } else {
-                    const source = { uri: response.uri };
-                    // console.log('image response...............', JSON.stringify(response));
-                    // console.log("response.assets[0].uri, response.assets[0].type, response.assets[0].fileName",response.assets[0].uri, "      ",response.assets[0].type, "     ",response.assets[0].fileName);
-                    // // this.setState({
-                    // //     filePath: response,
-                    // //     fileData: response.data,
-                    // //     fileUri: response.uri
-                    // // });
+            let permissionStatus;
+            if (Platform.OS === 'android') {
+                permissionStatus = await request(PERMISSIONS.ANDROID.CAMERA);
+            } else {
+                permissionStatus = await request(PERMISSIONS.IOS.CAMERA);
+            }
 
-                    try {
-                        // Upload the image using FormData
+            if (permissionStatus === RESULTS.GRANTED) {
+                // launchCamera = () => {
+                let options = {
+                    storageOptions: {
+                        skipBackup: true,
+                        path: 'images',
+                    },
+                };
+                ImagePicker.launchCamera(options, async (response) => {
+
+                    if (response.didCancel) {
+                        // console.log('User cancelled image picker by pressing back button');
+
+                    } else if (response.error) {
+                        console.log('ImagePicker Error: ', response.error);
+                    } else if (response.customButton) {
+                        // console.log('User selected custom button: ', response.customButton);
+                        // Alert.alert(response.customButton);
+                    } else {
+                        const source = { uri: response.uri };
+                        // console.log('image response...............', JSON.stringify(response));
+                        // console.log("response.assets[0].uri, response.assets[0].type, response.assets[0].fileName",response.assets[0].uri, "      ",response.assets[0].type, "     ",response.assets[0].fileName);
+                        // // this.setState({
+                        // //     filePath: response,
+                        // //     fileData: response.data,
+                        // //     fileUri: response.uri
+                        // // });
+
+                        console.log("response.assets[0]", response.assets[0]);
+
+                        const result = await Image.compress(response.assets[0].uri, {
+                            compressionMethod: 'manual',
+                            maxWidth: 1000,
+                            quality: 0.8,
+                        });
+
+                        console.log("result IMAGE UPLOAD", result);
+
                         const formData = new FormData();
                         formData.append('image', {
-                            uri: response.assets[0].uri,
+                            uri: result,
                             type: response.assets[0].type,
                             name: response.assets[0].fileName,
                         });
 
                         formData.append('assistantID', userId)
-                        // console.log("url", url);
-                        const uploadResponse = await axios.post(`${url}/api/v1/parking-tickets/uploadParkingTicket`, formData, {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                                'userId': userId,
-                                'Authorization': `Bearer ${token}`
-                            },
-                        });
+                        // Upload the image using FormData
+                        try {
+                            // console.log("url", url);
+                            const uploadResponse = await axios.post(`${url}/api/v1/parking-tickets/uploadParkingTicket`, formData, {
+                                headers: {
+                                    'Content-Type': 'multipart/form-data',
+                                    'userId': userId,
+                                    'Authorization': `Bearer ${token}`
+                                },
+                            });
 
-                        console.log('Upload Response:', uploadResponse.data);
-                        onCapture(response.assets[0].uri, uploadResponse.data.path)
-
-
-                    } catch (error) {
-                        console.error('Upload Error:', error);
-                    } finally {
-                        setTimeout(() => {
-                            setCapture(false)
-                        }, 2000)
+                            console.log('Upload Response:', uploadResponse.data);
+                            onCapture(response.assets[0].uri, uploadResponse.data.path)
+                        } catch (error) {
+                            console.error('Upload Error:', error);
+                            Alert.alert('Upload Failed', error);
+                        }
                     }
-                }
-            });
+                });
 
-            // }
+            } else {
+                Alert.alert('Camera Permission', 'Camera permission is required to take pictures.');
+            }
+        } catch (error) {
+            console.error('Upload Error or Camera Permission Error:', error);
+            Alert.alert('Upload Error or Camera Permission Error:', error);
 
-        } else {
-            Alert.alert('Camera Permission', 'Camera permission is required to take pictures.');
-        }
-
-        setTimeout(() => {
+        } finally {
+            setCapture(false)
             setIsCapturing(false)
-
-        }, 3000)
-
+        }
     };
 
 
     return (
         <>
-            {!capture && <TouchableOpacity onPress={handleCapture} style={styles.button}>
-                <Text style={styles.buttonText}>Click to capture the vehicle image</Text>
-            </TouchableOpacity>}
+            <TouchableOpacity disabled={capture} onPress={handleCapture} style={styles.button}>
+                {capture ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                    <Text style={styles.buttonText}>Click to capture the vehicle image</Text>
+                )}
+            </TouchableOpacity>
         </>
 
     );

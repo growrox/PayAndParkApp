@@ -56,9 +56,18 @@ export default function AssistantPage({ navigation, route }) {
   useEffect(() => {
     setAssistantStats((prev) => ({
       ...prev,
-      finePaid: 0
+
     }))
-  }, [fineChecked])
+  }, assistantPageStats)
+
+  useEffect(() => {
+    const totalRewards = (assistantPageStats.cashCollection - assistantPageStats.finePaid) >= 2000 ? 200 : 0;
+    setAssistantStats((prev) => ({
+      ...prev,
+      rewardPaid: totalRewards
+    }));
+  }, [assistantPageStats.finePaid]);
+
 
   const calculateTotal = () => {
     return cashData.reduce((total, item) => total + (item.denomination * item.count), 0);
@@ -80,7 +89,8 @@ export default function AssistantPage({ navigation, route }) {
       console.log('fetchAssistantPageStats data:', data);
       console.log('fetchAssistantPageStats status:', response.status);
       if (response.status == 200) {
-        const rewardMoney = (data?.result?.TotalCash - assistantPageStats?.finePaid) > 2000 ? 200 : 0
+        const rewardMoney = ((data?.result?.TotalCash + data?.result?.TotalOnline) - assistantPageStats?.finePaid) >= 2000 ? 200 : 0
+
         console.log("hit 200...........");
 
         setAssistantStats({
@@ -216,10 +226,6 @@ export default function AssistantPage({ navigation, route }) {
 
     }
   }
-
-  useEffect(() => {
-    console.log("assistantPageStats", assistantPageStats);
-  }, [assistantPageStats])
 
   const handleFineAmountChange = (_v) => {
     setAssistantStats((prev) => ({

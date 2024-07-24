@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     ImageBackground,
     StyleSheet,
-    ScrollView
+    ScrollView, ActivityIndicator
 } from 'react-native';
 import DashboardHeader from '../../DashboardHeader';
 import { url } from '../../../utils/url';
@@ -35,6 +35,7 @@ const PaymentDetails = ({ navigation, route }) => {
         passId: ''
     });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [isConfirmLoader, setConfirmLoader] = useState(false)
 
     useEffect(() => {
         // console.log("userEnteredData", userEnteredData);
@@ -209,20 +210,20 @@ const PaymentDetails = ({ navigation, route }) => {
         //     return toast.show("Please enter an amount.", { type: 'warning', placement: 'top' });
         // }
 
-        let paymentResult;
-        if (paymentMode === "Online") {
-            paymentResult = await initiatePayment();
-            console.log('Payment Result:', paymentResult);
-
-            if (!paymentResult.result) {
-                await deleteOrder(paymentResult.ref_id);
-                return;
-            } else {
-                await successPayment(paymentResult.result)
-            }
-        }
-
         try {
+            setConfirmLoader(true)
+            let paymentResult;
+            if (paymentMode === "Online") {
+                paymentResult = await initiatePayment();
+                console.log('Payment Result:', paymentResult);
+
+                if (!paymentResult.result) {
+                    await deleteOrder(paymentResult.ref_id);
+                    return;
+                } else {
+                    await successPayment(paymentResult.result)
+                }
+            }
             console.log('paymentResult.ref_id', paymentResult?.ref_id);
             const apiData = {
                 vehicleType: userEnteredData.selectedVehicle,
@@ -278,6 +279,8 @@ const PaymentDetails = ({ navigation, route }) => {
         } catch (error) {
             console.error('Error from handleConfirm:', error);
             toast.show(`Error from handleConfirm: ${error.message}`, { type: 'danger', placement: 'top' });
+        } finally {
+            setConfirmLoader(false)
         }
     };
 
@@ -345,8 +348,12 @@ const PaymentDetails = ({ navigation, route }) => {
                                 <ImageBackground source={{ uri: userEnteredData.vehicleImage.uri }} style={styles.image} />
                             </View>
                         </View>
-                        <TouchableOpacity style={styles.button} onPress={handleConfirm}>
-                            <Text style={styles.buttonText}>Confirm</Text>
+                        <TouchableOpacity disabled={isConfirmLoader} style={styles.button} onPress={handleConfirm}>
+                            {isConfirmLoader ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.buttonText}>Confirm</Text>
+                            )}
                         </TouchableOpacity>
                     </> :
                     <>

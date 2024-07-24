@@ -77,7 +77,8 @@ const VerifyOTP = ({ navigation, route }) => {
                         name: data.name,
                         phoneNo: phoneNo,
                         userId: data.userId,
-                        name: data.name
+                        name: data.name,
+                        code: data.code || 'XXXXXX'
                     },
                 });
             } else if (response.status === 401 || response.status === 406) {

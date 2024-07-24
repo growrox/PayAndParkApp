@@ -4,17 +4,35 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
+import { Picker } from '@react-native-picker/picker';
+import '../../translations/i18n'
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHeaderText }) => {
-    const { isClockedIn, userId, token, phoneNo, name, shiftDetails, role } = useSelector(state => state.auth)
+    const { isClockedIn, userId, token, phoneNo, name, shiftDetails, role, code } = useSelector(state => state.auth)
     const [isLoading, setLoading] = React.useState(false)
+    const [currentLanguage, setCurrentLanguage] = React.useState('en');
     const toast = useToast();
     const dispatch = useDispatch();
+    const { t, i18n } = useTranslation();
 
     const handleOutsidePress = () => {
         setModalVisible(false);
     };
+
+    const handleChangeLanguage = async (language) => {
+        try {
+            await i18n.changeLanguage(language);
+            await AsyncStorage.setItem('language', language);
+            setCurrentLanguage(language);
+        } catch (error) {
+            console.error("error on handleChangeLanguage", error);
+        }
+    };
+
 
 
     const handleClockin = async () => {
@@ -163,7 +181,7 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                                         style={{ ...styles.statusButton, borderColor: isClockedIn ? '#28a745' : '#c71f1f' }}
                                         onPress={() => { }}
                                     >
-                                        <Text style={{ ...styles.statusText, color: isClockedIn ? '#28a745' : '#c71f1f', }}>{isClockedIn ? 'Online' : 'Offline'}</Text>
+                                        <Text style={{ ...styles.statusText, color: isClockedIn ? '#28a745' : '#c71f1f', }}>{isClockedIn ? t('Online') : t('Offline')}</Text>
                                     </TouchableOpacity>}
                                     <TouchableOpacity
                                         style={styles.closeButton}
@@ -188,9 +206,25 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
 
                             {role === 'assistant' && <><Text style={{ ...styles.phoneNumber, fontWeight: "700", fontSize: 13 }}>{shiftDetails?.name}</Text>
                                 <View style={{ ...styles.phoneNumberContainer, marginTop: 2 }}>
-                                    <Text style={styles.phoneNumber}> <Text style={{ fontWeight: '700' }}>Start:</Text> {shiftDetails?.startTime}  </Text>
-                                    <Text style={styles.phoneNumber}><Text style={{ fontWeight: '700' }}> End: </Text>{shiftDetails?.endTime}</Text>
+                                    <Text style={styles.phoneNumber}> <Text style={{ fontWeight: '700' }}>{t("Start")}:</Text> {shiftDetails?.startTime}  </Text>
+                                    <Text style={styles.phoneNumber}><Text style={{ fontWeight: '700' }}> {t("End")}: </Text>{shiftDetails?.endTime}</Text>
                                 </View></>}
+
+                            {role === 'supervisor' && <Text style={styles.phoneNumber}><Text style={{ fontWeight: '700' }}> Code: </Text>{code}</Text>}
+
+                            <View style={styles.languagePicker}>
+                                <Text style={styles.languageLabel}>{t("Language")}: </Text>
+                                <Picker
+                                    selectedValue={currentLanguage}
+                                    style={styles.picker}
+                                    onValueChange={(itemValue) => handleChangeLanguage(itemValue)}
+                                >
+                                    <Picker.Item style={styles.pickerItem} label="English" value="en" />
+                                    <Picker.Item style={styles.pickerItem} label="हिन्दी" value="hi" />
+                                    <Picker.Item style={styles.pickerItem} label="मराठी" value="mr" />
+                                </Picker>
+                            </View>
+
 
                             <View style={{ ...styles.buttonContainer, ...(secondaryHeaderText === 'ASSISTANT' ? { justifyContent: 'space-between' } : { justifyContent: 'center' }) }}>
                                 {(secondaryHeaderText !== 'SUPERVISOR' && secondaryHeaderText !== 'ACCOUNTANT') && <TouchableOpacity
@@ -201,7 +235,7 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                                     }}
                                 >
                                     {isLoading ? <ActivityIndicator size="small" color="#fff" /> :
-                                        <Text disabled={isLoading} style={styles.clockInText}>{isClockedIn ? 'Clock Out' : 'Clock In'}</Text>}
+                                        <Text disabled={isLoading} style={styles.clockInText}>{isClockedIn ? t("Clock Out") : t("Clock In")}</Text>}
                                 </TouchableOpacity>}
 
                                 <TouchableOpacity
@@ -213,7 +247,7 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                                 >
 
 
-                                    <Text style={styles.logoutButtonText}>Log Out</Text>
+                                    <Text style={styles.logoutButtonText}>{t("Log Out")}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -239,6 +273,23 @@ const styles = StyleSheet.create({
         position: 'relative',
         overflow: 'hidden',
         paddingVertical: 10,
+    },
+    languagePicker: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20
+    },
+    languageLabel: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    picker: {
+        height: 52,
+        width: 150,
+    },
+    pickerItem: {
+        fontSize: 14,
     },
     header: {
         width: '100%',
