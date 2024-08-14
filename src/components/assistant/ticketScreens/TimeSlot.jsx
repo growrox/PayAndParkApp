@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import DashboardHeader from '../../DashboardHeader';
+import { useTranslation } from 'react-i18next';
 
 export default function TimeSlot({ navigation, route }) {
     const { selectedVehicle } = route.params;
+    const { t } = useTranslation();
 
     const handleCardPress = (slot, amount) => {
         // console.log(`Selected time slot type: ${slot}`);
@@ -16,12 +18,12 @@ export default function TimeSlot({ navigation, route }) {
     return (
         <View style={styles.container}>
             <DashboardHeader
-                headerText={'Profile'}
+                headerText={t('Profile')}
                 secondaryHeaderText={'ASSISTANT'}
             />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.subHeader}>
-                    <Text style={styles.subHeaderText}>Select Time Slot</Text>
+                    <Text style={styles.subHeaderText}>{t("Select Time Slot")}</Text>
                 </View>
 
                 <View style={styles.cardContainer}>
@@ -32,17 +34,17 @@ export default function TimeSlot({ navigation, route }) {
                                 style={styles.collectionCard}
                                 onPress={() => handleCardPress(_d.hour, _d.price)}
                             >
-                                <Text style={styles.cardTitle}>{_d.hour} Hours</Text>
-                                <Text style={styles.cardTitle}>{_d.price} Rs</Text>
+                                <Text style={styles.cardTitle}>{_d.hour} {t("Hours")}</Text>
+                                <Text style={styles.cardTitle}>{_d.price} {t("Rs")}</Text>
                             </TouchableOpacity>
                         )
                     })}
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={{ ...styles.collectionCard, justifyContent: 'center' }}
                         onPress={() => handleCardPress('All Month Pass', 0)}
                     >
-                        <Text style={styles.cardTitle}>All Month Pass</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.cardTitle}>{t("All Month Pass")}</Text>
+                    </TouchableOpacity> */}
 
                 </View>
             </ScrollView>

@@ -7,6 +7,7 @@ import { AUTH_LOG_OUT } from '../../../redux/types';
 import { url } from '../../../utils/url';
 import { Spinner } from '../../../utils/Spinner';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 export default function AllAssitantTickets({ navigation }) {
     const [allTickets, setAllTickets] = useState([]);
@@ -15,9 +16,10 @@ export default function AllAssitantTickets({ navigation }) {
     const [isFetchingMore, setFetchingMore] = useState(false);
     const [pageNumber, setPageNumber] = useState(1);
     const [isNoData, setNoData] = useState(false);
-    const { token, userId } = useSelector(state => state.auth);
+    const { token, userId, appLanguage } = useSelector(state => state.auth);
     const toast = useToast();
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     useEffect(() => {
         fetchAllTickets(pageNumber);
@@ -33,6 +35,7 @@ export default function AllAssitantTickets({ navigation }) {
                     'x-client-source': 'app',
                     'userId': userId,
                     'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage
                 },
             });
 
@@ -84,7 +87,7 @@ export default function AllAssitantTickets({ navigation }) {
 
     const handleSubmitSearch = async () => {
         if (searchQuery.length < 1) {
-            toast.show('Please enter any keyword to search', { type: 'warning', placement: 'top' });
+            toast.show(t('Please enter any keyword to search'), { type: 'warning', placement: 'top' });
             return;
         }
         setLoading(true);
@@ -112,14 +115,17 @@ export default function AllAssitantTickets({ navigation }) {
     const renderTicket = ({ item, index }) => (
         <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
             <View key={item._id} style={styles.ticket}>
-                <View style={styles.ticketRow}>
-                    <Text style={styles.ticketText}>Ticket #0{index + 1}</Text>
+                <View style={{ ...styles.settledBadge, ...(item?.status === 'settled' ? { backgroundColor: '#2ecc71' } : { backgroundColor: "#e74c3c" }) }}>
+                    <Text style={{ color: '#ffffff' }}>{item?.status === 'settled' ? t("Settled") : t("Unsettled")}</Text>
+                </View>
+                <View style={{ ...styles.ticketRow, marginTop: 10 }}>
+                    <Text style={styles.ticketText}>{t("Ticket")} #0{index + 1}</Text>
                     <Text style={styles.ticketText}>{moment(item.createdAt).format('MM/DD/YYYY h:mm')}</Text>
                 </View>
                 <View style={styles.separator} />
 
                 <View style={styles.ticketRow}>
-                    <Text style={styles.ticketText}>Vehicle No {item.vehicleNumber}</Text>
+                    <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
                     <Text style={styles.ticketText}>{item.paymentMode}</Text>
                 </View>
             </View>
@@ -128,19 +134,19 @@ export default function AllAssitantTickets({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <DashboardHeader headerText={'Profile'} secondaryHeaderText={'ASSISTANT'} />
+            <DashboardHeader headerText={t('Profile')} secondaryHeaderText={'ASSISTANT'} />
             <View style={styles.searchContainer}>
                 <View style={styles.searchContainerChild}>
                     <Image source={require('../../../utils/images/search.png')} style={styles.searchLogo} />
                     <TextInput
                         style={styles.searchBar}
-                        placeholder="Search"
+                        placeholder={t("Search")}
                         placeholderTextColor={'grey'}
                         value={searchQuery}
                         onChangeText={handleSearch}
                     />
                     <TouchableOpacity onPress={handleSubmitSearch} style={styles.searchButton}>
-                        <Text style={styles.searchButtonText}>Search</Text>
+                        <Text style={styles.searchButtonText}>{t("Search")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -150,7 +156,7 @@ export default function AllAssitantTickets({ navigation }) {
 
                 <>
                     {allTickets?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
-                        <Text style={styles.phone}>No ticket created yet!</Text>
+                        <Text style={styles.phone}>{t("No ticket created yet")}!</Text>
                     </View> : <FlatList
                         data={allTickets}
                         renderItem={renderTicket}
@@ -219,6 +225,17 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         borderWidth: 1,
         borderColor: '#e0e0e0',
+    },
+    settledBadge: {
+        position: 'absolute',
+        top: -1.2,
+        width: 80,
+        height: 23,
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8
     },
     ticketRow: {
         flexDirection: 'row',

@@ -4,7 +4,7 @@ import {
     AUTH_SIGN_UP_SUCCESS,
     CREATE_TICKET,
     ASSISTANT_CLOCK,
-    SUPER_SETTLED_AMOUNT
+    SUPER_SETTLED_AMOUNT, APP_LANGUAGE
 } from "./types";
 
 const authInitialState = {
@@ -20,6 +20,7 @@ const authInitialState = {
     isClockedIn: false,
     isTicketSuperVisorSettled: false,
     shiftDetails: {},
+    appLanguage: 'en',
 };
 
 
@@ -56,6 +57,7 @@ const authReducer = (state = authInitialState, { type, payload }) => {
         }
         case AUTH_LOG_OUT: {
             return {
+                ...state,
                 loading: false,
                 isAuthenticated: false,
                 token: "",
@@ -84,6 +86,12 @@ const authReducer = (state = authInitialState, { type, payload }) => {
             return {
                 ...state,
                 isTicketSuperVisorSettled: payload.isTicketSuperVisorSettled,
+            };
+        }
+        case APP_LANGUAGE: {
+            return {
+                ...state,
+                appLanguage: payload.appLanguage
             };
         }
 

@@ -5,6 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
 import { AUTH_LOG_OUT } from '../../redux/types';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 const Signup = () => {
   const navigation = useNavigation();
@@ -14,11 +16,13 @@ const Signup = () => {
     supervisorCode: ''
   })
   const toast = useToast()
-
+  const { appLanguage, token, userId } = useSelector(state => state.auth);
+  const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
   const handleSignupPress = useCallback(async () => {
     // navigation.navigate('Signup');
-
-    if (!signupData.name || !signupData.phoneNo || !signupData.supervisorCode) toast.show('Please enter all the fields correctly!', { type: 'warning' })
+    setIsLoading(true)
+    if (!signupData.name || !signupData.phoneNo || !signupData.supervisorCode) toast.show(t('Please enter all the fields correctly!'), { type: 'warning' })
 
     const apiData = {
       name: signupData.name,
@@ -34,12 +38,15 @@ const Signup = () => {
         headers: {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage,
+          'userId': userId
         },
         body: JSON.stringify(apiData),
       });
 
       const data = await response.json();
-      // console.log('data of response.......', data);
+      console.log('data of response.......', data);
 
       if (response.status === 200) {
         toast.show(data.message, { type: 'success', placement: 'top' });
@@ -66,6 +73,8 @@ const Signup = () => {
     } catch (error) {
       console.log('Error occurred while signup', error);
       toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setIsLoading(false)
     }
 
   }, [signupData])
@@ -83,13 +92,13 @@ const Signup = () => {
 
   return (
     <MainComponent
-      Title="Create Account"
-      Description="Here there will be a slogan is there is"
+      Title={t("Create Account")}
+      Description={t("Here there will be a slogan is there is")}
     >
       <View style={styles.container}>
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Enter Your Name"
+            placeholder={t("Enter Your Name")}
             placeholderTextColor="grey"
             value={signupData.name}
             onChange={(v) => handleInputChange(v, 'name')}
@@ -98,7 +107,7 @@ const Signup = () => {
         </View>
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Enter Phone Number"
+            placeholder={t("Enter Phone Number")}
             value={signupData.phoneNo}
             onChange={(v) => handleInputChange(v, 'phoneNo')}
             placeholderTextColor="grey"
@@ -108,7 +117,7 @@ const Signup = () => {
         </View>
         <View style={styles.inputContainer}>
           <TextInput
-            placeholder="Enter Supervisor Code"
+            placeholder={t("Enter Supervisor Code")}
             placeholderTextColor="grey"
             value={signupData.supervisorCode}
             onChange={(v) => handleInputChange(v, 'supervisorCode')}
@@ -118,8 +127,9 @@ const Signup = () => {
         <TouchableOpacity
           onPress={handleSignupPress}
           style={styles.signUpButton}
+          disabled={isLoading}
         >
-          <Text style={styles.signUpButtonText}>SIGN UP</Text>
+          <Text style={styles.signUpButtonText}>{t("SIGN UP")}</Text>
         </TouchableOpacity>
 
       </View>

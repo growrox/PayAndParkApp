@@ -71,4 +71,11 @@ jul-21
         "LastSettledTicketUpdatedAt": null
     }
 }
+
+Todays task jul-25
+1) need to send a language key  to the api
+    a) for request need to send a client-language key in header with a value like a hi, en, mr
+    for to easy ==>     const { appLanguage } = useSelector(state => state.auth);
+2) need to show the account settlement tickets to the accountant
+3) change the language colour it's there but not visible
    

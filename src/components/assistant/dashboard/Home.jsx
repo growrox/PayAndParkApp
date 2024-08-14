@@ -8,10 +8,11 @@ import { Spinner } from '../../../utils/Spinner';
 import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../../redux/types';
 import moment from 'moment';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import { useTranslation } from 'react-i18next';
 
 
 export default function Home({ navigation }) {
-  const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
+  const { token, userId, isTicketCreated, isClockedIn, appLanguage } = useSelector(state => state.auth)
   const dispatch = useDispatch()
   const toast = useToast()
   const [assistantStats, setAssistantStats] = React.useState({
@@ -25,6 +26,7 @@ export default function Home({ navigation }) {
   const [isLoading, setLoading] = React.useState(true)
   const [isCreateTicket, setCreateTicket] = React.useState(false)
   const [recentTickets, setRecentTickets] = React.useState([]);
+  const { t } = useTranslation();
 
 
   const requestCameraPermission = async () => {
@@ -32,12 +34,12 @@ export default function Home({ navigation }) {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.CAMERA,
         {
-          title: 'Camera Permission',
+          title: t('Camera Permission'),
           message:
-            'App needs access to your camera ' + 'so you can take pictures.',
+            t('App needs access to your camera ') + t('so you can take pictures.'),
           // buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
+          buttonNegative: t('Cancel'),
+          buttonPositive: t('OK'),
         },
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
@@ -63,7 +65,7 @@ export default function Home({ navigation }) {
 
   const handleCreateTicket = async () => {
     if (!isClockedIn) {
-      return toast.show("Please clock-in to create ticket", { type: 'warning' });
+      return toast.show(t("Please clock-in to create ticket"), { type: 'warning' });
 
     }
 
@@ -75,7 +77,8 @@ export default function Home({ navigation }) {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
           'userId': `${userId}`,
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
         },
 
       });
@@ -122,7 +125,8 @@ export default function Home({ navigation }) {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
           'userId': `${userId}`,
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
         },
 
       });
@@ -180,7 +184,8 @@ export default function Home({ navigation }) {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
           'userId': userId,
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
         },
       });
 
@@ -230,7 +235,8 @@ export default function Home({ navigation }) {
           'x-client-source': 'app',
           'userId': userId,
           'Authorization': `Bearer ${token}`,
-          'page': 'home'
+          'page': 'home',
+          'client-language': appLanguage
         },
       });
 
@@ -280,7 +286,7 @@ export default function Home({ navigation }) {
     <View style={styles.container}>
       {/* Your existing UI */}
       <DashboardHeader
-        headerText={'Profile'}
+        headerText={t('Profile')}
         secondaryHeaderText={'ASSISTANT'}
       />
       {isLoading ? (
@@ -292,7 +298,7 @@ export default function Home({ navigation }) {
 
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.subHeader}>
-            <Text style={styles.subHeaderText}>Today's Collection</Text>
+            <Text style={styles.subHeaderText}>{t("Today's Collection")}</Text>
           </View>
 
           <View style={styles.cardContainer}>
@@ -302,8 +308,8 @@ export default function Home({ navigation }) {
                   source={require('../../../utils/images/homeAssistant/rupee.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Cash Collection</Text>
-                <Text style={styles.cardAmount}>{assistantStats.cashCollection} RS</Text>
+                <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
+                <Text style={styles.cardAmount}>{assistantStats.cashCollection} {t("Rs")}</Text>
               </View>
 
               <View style={styles.cardRow}>
@@ -311,8 +317,8 @@ export default function Home({ navigation }) {
                   source={require('../../../utils/images/homeAssistant/credit-card.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Online Collection</Text>
-                <Text style={styles.cardAmount}>{assistantStats.onlineCollection} RS</Text>
+                <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
+                <Text style={styles.cardAmount}>{assistantStats.onlineCollection} {t("Rs")}</Text>
               </View>
               {/* <View style={styles.cardRow}>
             <Image
@@ -320,18 +326,18 @@ export default function Home({ navigation }) {
               style={styles.cardIcon}
             />
             <Text style={styles.cardTitle}>Fine</Text>
-            <Text style={styles.cardAmount}>200 RS</Text>
+            <Text style={styles.cardAmount}>200 {t("Rs")}</Text>
           </View> */}
 
               <View style={styles.separator} />
 
               <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>Total Payable</Text>
-                <Text style={styles.cardAmount}>{assistantStats.totalPayable} RS</Text>
+                <Text style={styles.cardTitle}>{t("Total Payable")}</Text>
+                <Text style={styles.cardAmount}>{assistantStats.totalPayable} {t("Rs")}</Text>
               </View>
               <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>Total Collection</Text>
-                <Text style={styles.cardAmount}>{assistantStats.totalCollection} RS</Text>
+                <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
+                <Text style={styles.cardAmount}>{assistantStats.totalCollection} {t("Rs")}</Text>
               </View>
             </View>
           </View>
@@ -343,8 +349,8 @@ export default function Home({ navigation }) {
                   source={require('../../../utils/images/homeAssistant/star.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Bonus</Text>
-                <Text style={styles.cardAmount}>{assistantStats.bonus} RS</Text>
+                <Text style={styles.cardTitle}>{t("Bonus")}</Text>
+                <Text style={styles.cardAmount}>{assistantStats.bonus} {t("Rs")}</Text>
               </View>
             </View>
           </View>
@@ -353,35 +359,37 @@ export default function Home({ navigation }) {
             {isCreateTicket ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>CREATE PARKING TICKET</Text>
+              <Text style={styles.buttonText}>{t("CREATE PARKING TICKET")}</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.recentTicketsHeader}>
-            <Text style={styles.recentTicketsTitle}>Recent Parking Tickets</Text>
+            <Text style={styles.recentTicketsTitle}>{t("Recent Parking Tickets")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={styles.seeAllText}>{t("See All")}</Text>
             </TouchableOpacity>
           </View>
           {recentTickets?.length < 1 ? <View style={{ flex: 1, borderWidth: 0.4, padding: 8, marginTop: 15, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={styles.phone}>No ticket created yet!</Text>
+            <Text style={styles.phone}>{t("No ticket created yet")}!</Text>
           </View> : <>
             {
               recentTickets.map((item, i) => {
+                // console.log("isSettled", item?.settlementId?.isSettled);
                 return (
                   <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
                     <View key={item._id} style={styles.ticket}>
-                      <View style={styles.ticketRow}>
-                        <Text style={styles.ticketText}>Ticket #0{i + 1}</Text>
+                      <View style={{ ...styles.settledBadge, ...(item?.status === 'settled' ? { backgroundColor: '#2ecc71' } : { backgroundColor: "#e74c3c" }) }}>
+                        <Text style={{ color: '#ffffff' }}>{item?.status === 'settled' ? t("Settled") : t("Unsettled")}</Text>
+                      </View>
+                      <View style={{ ...styles.ticketRow, marginTop: 10 }}>
+                        <Text style={styles.ticketText}>{t("Ticket")} #{i + 1}</Text>
                         <Text style={styles.ticketText}>
-                          {/* {moment(item.createdAt).format('MM/DD/YYYY h:mm')} */}
                           {moment.utc(item.createdAt).local().format('DD/MM/YY, h:mm A')}
                         </Text>
                       </View>
                       <View style={styles.separator} />
-
                       <View style={styles.ticketRow}>
-                        <Text style={styles.ticketText}>Vehicle No {item.vehicleNumber}</Text>
+                        <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
                         <Text style={styles.ticketText}>{item.paymentMode}</Text>
                       </View>
                     </View>
@@ -495,12 +503,24 @@ const styles = StyleSheet.create({
     color: '#007bff',
   },
   ticket: {
+    position: 'relative',
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+  },
+  settledBadge: {
+    position: 'absolute',
+    top: -1.2,
+    width: 80,
+    height: 23,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8
   },
   ticketRow: {
     flexDirection: 'row',

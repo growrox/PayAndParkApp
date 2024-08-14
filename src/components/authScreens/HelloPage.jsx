@@ -4,11 +4,12 @@ import MainComponent from './MainComponent';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { AUTH_LOG_IN_SUCCESS } from '../../redux/types';
+import { useTranslation } from 'react-i18next';
 
 const HelloPage = React.memo(() => {
   const navigation = useNavigation();
   const dispatch = useDispatch()
-
+  const { t } = useTranslation();
   // useEffect(() => {
   //   dispatch({
   //     type: AUTH_LOG_IN_SUCCESS,
@@ -25,21 +26,21 @@ const HelloPage = React.memo(() => {
 
   return (
     <MainComponent
-      Title="HELLO"
-      Description="let's help others park"
+      Title={t("HELLO")}
+      Description={t("let's help others park")}
     >
       <View style={styles.container}>
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
           style={styles.signInButton}
         >
-          <Text style={styles.signInButtonText}>SIGN IN</Text>
+          <Text style={styles.signInButtonText}>{t("SIGN IN")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.navigate('Signup')}
           style={styles.signUpButton}
         >
-          <Text style={styles.signUpButtonText}>SIGN UP</Text>
+          <Text style={styles.signUpButtonText}>{t("SIGN UP")}</Text>
         </TouchableOpacity>
       </View>
     </MainComponent>

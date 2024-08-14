@@ -5,11 +5,12 @@ import { useToast } from 'react-native-toast-notifications';
 import CameraCapture from './cameraCapture/CameraCapture';
 import { Icon, Card } from '@rneui/themed';
 import { AUTH_LOG_OUT } from '../../../redux/types';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { url } from '../../../utils/url';
 import CameraCaptureModal from './CameraCaptureModal';
 import Geolocation from 'react-native-geolocation-service';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
 
 
 const requestLocationPermission = async () => {
@@ -62,7 +63,8 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     })
     const [isCapturing, setIsCapturing] = useState(false)
     const [location, setLocation] = useState(false);
-
+    const { t } = useTranslation();
+    const { appLanguage, token, userId } = useSelector(state => state.auth);
 
     const toast = useToast();
 
@@ -77,29 +79,29 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
     const handleSubmit = async () => {
         if (!vehicleNumber) {
-            toast.show('Please enter a vehicle number', { type: 'warning', placement: 'top' });
+            toast.show(t('Please enter a vehicle number'), { type: 'warning', placement: 'top' });
             return;
         }
 
         if (phoneNumber.length !== 10) {
-            toast.show('Phone number cannot be less than ten digits.', { type: 'warning', placement: 'top' });
+            toast.show(t('Phone number cannot be less than ten digits'), { type: 'warning', placement: 'top' });
             return;
         }
         if (!selectedMethod) {
-            toast.show('Please select a payment method.', { type: 'warning', placement: 'top' });
+            toast.show(t('Please select a payment method'), { type: 'warning', placement: 'top' });
             return;
         }
         if (!imageUri?.uri) {
-            toast.show('Please capture an image.', { type: 'warning', placement: 'top' });
+            toast.show(t('Please capture an image'), { type: 'warning', placement: 'top' });
             return;
         }
         if (!name) {
-            toast.show('Please Enter a Owner name.', { type: 'warning', placement: 'top' });
+            toast.show(t('Please Enter a Owner name'), { type: 'warning', placement: 'top' });
             return;
         }
         if (selectedMethod === 'Free') {
             if (!remarks) {
-                return toast.show("Please enter any remarks.", { type: 'warning', placement: 'top' });
+                return toast.show(t("Please enter any remarks"), { type: 'warning', placement: 'top' });
             }
         }
         // console.log("imageUri", imageUri);
@@ -175,7 +177,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     const handleSubmitSearch = async () => {
 
         if (searchQuery.length < 1) {
-            toast.show('Please enter any keyword to search', { type: 'warning', placement: 'top' });
+            toast.show(t('Please enter any keyword to search'), { type: 'warning', placement: 'top' });
         }
         try {
             const response = await fetch(`${url}/api/v1/vehicle-passes/${searchQuery}`, {
@@ -183,6 +185,9 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
+                    'client-language': appLanguage,
+                    'Authorization': `Bearer ${token}`,
+                    'userId': userId
                 },
             });
 
@@ -265,7 +270,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
         // console.log('id, isActive name', _data._id, '   ', _data.isActive, '  ', _data.name);
         if (!_data.isActive) {
-            return toast.show('Your pass is expired', { type: 'warning', placement: 'top' });
+            return toast.show(t('Your pass is expired'), { type: 'warning', placement: 'top' });
         }
         setCapture({
             capturing: true,
@@ -317,19 +322,16 @@ export default function VehiclePaymentEntry({ navigation, route }) {
         })
     }
 
-    useEffect(() => {
-        console.log('isCapturing', isCapturing);
-    }, [isCapturing])
 
     return (
         <View style={styles.container}>
             <DashboardHeader
-                headerText={'Profile'}
+                headerText={t('Profile')}
                 secondaryHeaderText={'ASSISTANT'}
             />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.subHeader}>
-                    <Text style={styles.subHeaderText}>Vehicle Payment Entry</Text>
+                    <Text style={styles.subHeaderText}>{t("Vehicle Payment Entry")}</Text>
                 </View>
 
                 <View>
@@ -337,21 +339,21 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                         <TextInput
                             style={styles.input}
                             value={name}
-                            placeholder='Enter vehicle Owner Name'
+                            placeholder={t('Enter vehicle Owner Name')}
                             placeholderTextColor={'grey'}
                             onChangeText={setName}
                         />
                         <TextInput
                             style={styles.input}
                             value={vehicleNumber}
-                            placeholder='Enter Vehicle Number'
+                            placeholder={t('Enter Vehicle Number')}
                             placeholderTextColor={'grey'}
                             onChangeText={setVehicleNumber}
                         />
                         <TextInput
                             style={styles.input}
                             value={phoneNumber}
-                            placeholder='Enter Phone Number'
+                            placeholder={t('Enter Phone Number')}
                             placeholderTextColor={'grey'}
                             onChangeText={setPhoneNumber}
                         />
@@ -383,23 +385,23 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
                 {
                     selectedTime !== 'All Month Pass' && <>
-                        <Text style={styles.secondHeading}>Payment Method</Text>
+                        <Text style={styles.secondHeading}>{t("Payment Method")}</Text>
 
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             style={styles.radioButton}
                             onPress={() => handleSelectMethod('Online')}
                         >
-                            <Text style={styles.radioText}>Online</Text>
+                            <Text style={styles.radioText}>{t("Online")}</Text>
                             <View style={styles.radioCircleOuter}>
                                 {selectedMethod === 'Online' && <View style={styles.radioCircleInner} />}
                             </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
 
                         <TouchableOpacity
                             style={styles.radioButton}
                             onPress={() => handleSelectMethod('Cash')}
                         >
-                            <Text style={styles.radioText}>Cash</Text>
+                            <Text style={styles.radioText}>{t("Cash")}</Text>
                             <View style={styles.radioCircleOuter}>
                                 {selectedMethod === 'Cash' && <View style={styles.radioCircleInner} />}
                             </View>
@@ -409,7 +411,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                             style={styles.radioButton}
                             onPress={() => handleSelectMethod('Free')}
                         >
-                            <Text style={styles.radioText}>Free</Text>
+                            <Text style={styles.radioText}>{t("Free")}</Text>
                             <View style={styles.radioCircleOuter}>
                                 {selectedMethod === 'Free' && <View style={styles.radioCircleInner} />}
                             </View>
@@ -419,12 +421,12 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
                 {
                     (selectedMethod === 'Free' && selectedTime !== 'All Month Pass') && <>
-                        <Text style={styles.label}>Remarks</Text>
+                        <Text style={styles.label}>{t("Remarks")}</Text>
                         <TextInput
                             style={styles.input}
                             value={remarks}
                             onChangeText={setRemarks}
-                            placeholder='Please Enter Remarks'
+                            placeholder={('Please Enter Remarks')}
                         />
                     </>
                 }
@@ -438,17 +440,17 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                                 />
                                 <TextInput
                                     style={styles.searchBar}
-                                    placeholder="Search"
+                                    placeholder={t("Search")}
                                     placeholderTextColor={'grey'}
                                     value={searchQuery}
                                     onChangeText={handleSearch}
                                 />
                                 <TouchableOpacity onPress={handleSubmitSearch} style={styles.searchButton}>
-                                    <Text style={styles.searchButtonText}>Search</Text>
+                                    <Text style={styles.searchButtonText}>{t("Search")}</Text>
                                 </TouchableOpacity>
                             </View>
                             {passData.length < 1 ? <View style={{ flex: 1, borderWidth: 0.4, padding: 8, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
-                                <Text style={styles.phone}>No data found!</Text>
+                                <Text style={styles.phone}>{t("No data found")}!</Text>
                             </View> :
                                 <>
                                     {passData.map((item) => (
@@ -475,7 +477,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                                                 </View>
                                                 <View style={styles.cardContent}>
                                                     <Text style={styles.phone}>{item.phone}</Text>
-                                                    <Text style={{ ...styles.phone, fontSize: 14 }}>{moment(item.expireDate).format('DD-MMM-YY')}</Text>
+                                                    <Text style={{ ...styles.phone, fontSize: 14 }}>{moment(item.passExpiryDate).format('DD-MMM-YY')}</Text>
                                                 </View>
                                             </Card>
                                         </Pressable>
@@ -488,7 +490,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                     )
                 }
                 {selectedTime !== 'All Month Pass' && <TouchableOpacity disabled={isCapturing} onPress={handleSubmit} style={{ ...styles.submitButton, ...(isCapturing ? { opacity: 0.5 } : {}) }}>
-                    <Text style={styles.buttonText}>Submit</Text>
+                    <Text style={styles.buttonText}>{t("Submit")}</Text>
                 </TouchableOpacity>}
             </ScrollView >
 

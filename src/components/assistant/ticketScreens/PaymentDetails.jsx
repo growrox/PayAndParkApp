@@ -17,10 +17,12 @@ import { CREATE_TICKET } from '../../../redux/types';
 import SuccessModal from './SuccessModal';
 import RazorpayCheckout from 'react-native-razorpay';
 import moment from 'moment';
+import { useTranslation } from 'react-i18next';
+import QRModal from './QRModal';
 
 const PaymentDetails = ({ navigation, route }) => {
     const { userEnteredData } = route.params;
-    const { token, userId, isTicketCreated } = useSelector(state => state.auth);
+    const { token, userId, isTicketCreated, appLanguage } = useSelector(state => state.auth);
     const toast = useToast();
     const dispatch = useDispatch();
     const [details, setDetails] = useState({
@@ -36,6 +38,9 @@ const PaymentDetails = ({ navigation, route }) => {
     });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [isConfirmLoader, setConfirmLoader] = useState(false)
+    const [QRModalVisible, setQRModalVisible] = useState(false);
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         // console.log("userEnteredData", userEnteredData);
@@ -76,7 +81,9 @@ const PaymentDetails = ({ navigation, route }) => {
             headers: {
                 'Content-Type': 'application/json',
                 'x-client-source': 'app',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'client-language': appLanguage,
+                'userId': userId
             },
             body: JSON.stringify({ amount: details.amount })
         });
@@ -152,7 +159,8 @@ const PaymentDetails = ({ navigation, route }) => {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
                     'userId': userId,
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage
                 }
             });
 
@@ -160,7 +168,7 @@ const PaymentDetails = ({ navigation, route }) => {
             // console.log('data of delete........', data);
 
             if (response.status === 200) {
-                toast.show('Order deleted successfully', { type: 'success', placement: 'top' });
+                toast.show(t('Order deleted successfully'), { type: 'success', placement: 'top' });
             } else {
                 handleErrorResponse(response, data);
             }
@@ -178,7 +186,8 @@ const PaymentDetails = ({ navigation, route }) => {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
                     'userId': userId,
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage
                 },
                 body: JSON.stringify(result)
             });
@@ -187,7 +196,7 @@ const PaymentDetails = ({ navigation, route }) => {
             // console.log('data of delete........', data);
 
             if (response.status === 200) {
-                toast.show('Payment completed successfully', { type: 'success', placement: 'top' });
+                toast.show(t('Payment completed successfully'), { type: 'success', placement: 'top' });
             } else {
                 handleErrorResponse(response, data);
             }
@@ -248,7 +257,9 @@ const PaymentDetails = ({ navigation, route }) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
-                    'Authorization': `Bearer ${token}`
+                    'userId': userId,
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage
                 },
                 body: JSON.stringify(apiData),
             });
@@ -286,45 +297,50 @@ const PaymentDetails = ({ navigation, route }) => {
 
     return (
         <>
-            <DashboardHeader headerText={'Profile'} secondaryHeaderText={'ASSISTANT'} />
+            <DashboardHeader headerText={t('Profile')} secondaryHeaderText={'ASSISTANT'} />
             <ScrollView contentContainerStyle={styles.container}>
+                {details.paymentMode === "Cash" && <View style={styles.headerContainer}>
+                    <TouchableOpacity onPress={() => setQRModalVisible(true)} style={styles.QrContainer}>
+                        <Text style={styles.QrText}>{t("Show QR")}</Text>
+                    </TouchableOpacity>
+                </View>}
                 <View style={styles.subHeader}>
-                    <Text style={styles.subHeaderText}>Payment Details</Text>
+                    <Text style={styles.subHeaderText}>{t("Payment Details")}</Text>
                 </View>
-                <Text style={styles.label}>Name</Text>
+                <Text style={styles.label}>{t("Name")}</Text>
                 <TextInput
                     style={styles.input}
                     value={details.name}
                     editable={false}
                 />
-                <Text style={styles.label}>Vehicle Number</Text>
+                <Text style={styles.label}>{t("Vehicle Number")}</Text>
                 <TextInput
                     style={styles.input}
                     value={details.vehicleNumber}
                     editable={false}
                 />
-                <Text style={styles.label}>Phone Number</Text>
+                <Text style={styles.label}>{t("Phone Number")}</Text>
                 <TextInput
                     style={styles.input}
                     value={details.phoneNumber}
                     editable={false}
                 />
 
-                <Text style={styles.label}>Payment Method</Text>
+                <Text style={styles.label}>{t("Payment Method")}</Text>
                 <TextInput
                     style={styles.input}
                     value={details.paymentMode}
                     editable={false}
                 />
 
-                <Text style={styles.label}>Amount</Text>
+                <Text style={styles.label}>{t("Amount")}</Text>
                 <TextInput
                     style={styles.input}
                     value={String(details.amount)}
                     editable={false}
                 />
 
-                <Text style={styles.label}>Duration of Time</Text>
+                <Text style={styles.label}>{t("Duration of Time")}</Text>
                 <TextInput
                     style={styles.input}
                     value={String(details.duration)}
@@ -333,7 +349,7 @@ const PaymentDetails = ({ navigation, route }) => {
 
                 {details.paymentMode === 'Free' && (
                     <View>
-                        <Text style={styles.label}>Remarks (if free)</Text>
+                        <Text style={styles.label}>{t("Remarks (if free)")}</Text>
                         <TextInput
                             style={styles.input}
                             value={details.remarks}
@@ -352,7 +368,7 @@ const PaymentDetails = ({ navigation, route }) => {
                             {isConfirmLoader ? (
                                 <ActivityIndicator size="small" color="#fff" />
                             ) : (
-                                <Text style={styles.buttonText}>Confirm</Text>
+                                <Text style={styles.buttonText}>{t("Confirm")}</Text>
                             )}
                         </TouchableOpacity>
                     </> :
@@ -360,7 +376,7 @@ const PaymentDetails = ({ navigation, route }) => {
                         <View style={styles.imageContainer}>
                             {userEnteredData.image ? <View style={styles.imageWrapper}>
                                 <ImageBackground source={{ uri: `${url}/api/v1${userEnteredData.image}` }} style={styles.image} />
-                            </View> : <Text>No image preview!</Text>}
+                            </View> : <Text>{t("No image preview")}!</Text>}
                         </View>
                     </>
                 }
@@ -368,6 +384,7 @@ const PaymentDetails = ({ navigation, route }) => {
 
                 {/* Success Modal */}
                 <SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
+                <QRModal modalVisible={QRModalVisible} setModalVisible={setQRModalVisible} />
             </ScrollView>
         </>
     );
@@ -378,6 +395,19 @@ const styles = StyleSheet.create({
         padding: 20,
         backgroundColor: '#fff',
         flexGrow: 1
+    },
+    headerContainer: {
+        alignItems: 'flex-end',
+        marginBottom: -3,
+        marginTop: -9
+    },
+    QrContainer: {
+        padding: 10
+    },
+    QrText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#007bff'
     },
     subHeader: {
         marginBottom: 30,

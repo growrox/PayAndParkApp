@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Modal, StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 const ConfirmationModal = ({ isVisible, handleSettleAmount, handleClose, settlementAmount }) => {
+    const {t} = useTranslation()
     return (
         <Modal
             animationType="slide"
@@ -11,18 +13,18 @@ const ConfirmationModal = ({ isVisible, handleSettleAmount, handleClose, settlem
         >
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
-                    <Text style={styles.headerText}>Please confirm the settlement amount.</Text>
-                    <Text style={styles.modalText}>Collected Cash: {settlementAmount}</Text>
+                    <Text style={styles.headerText}>{t("Please confirm the settlement amount")}.</Text>
+                    <Text style={styles.modalText}>{t("Collected Cash")}: {settlementAmount}</Text>
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
-                            <Text style={styles.buttonText}>Cancel</Text>
+                            <Text style={styles.buttonText}>{t("Cancel")}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.confirmButton} onPress={() => {
                             handleClose()
                             handleSettleAmount()
                         }}>
-                            <Text style={styles.buttonText}>Confirm</Text>
+                            <Text style={styles.buttonText}>{t("Confirm")}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

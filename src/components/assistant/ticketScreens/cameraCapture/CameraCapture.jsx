@@ -6,11 +6,14 @@ import { url } from '../../../../utils/url';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { Image } from 'react-native-compressor';
+import { useTranslation } from 'react-i18next';
 
 
 export default function CameraCapture({ onCapture, setIsCapturing }) {
-    const { token, userId, isTicketCreated, isClockedIn } = useSelector(state => state.auth)
+    const { token, userId, isTicketCreated, isClockedIn, appLanguage } = useSelector(state => state.auth)
     const [capture, setCapture] = useState(false)
+
+    const { t } = useTranslation();
 
 
     const handleCapture = async () => {
@@ -85,11 +88,12 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
                                 headers: {
                                     'Content-Type': 'multipart/form-data',
                                     'userId': userId,
-                                    'Authorization': `Bearer ${token}`
+                                    'Authorization': `Bearer ${token}`,
+                                    'client-language': appLanguage
                                 },
                             });
 
-                            console.log('Upload Response:', uploadResponse.data);
+                            console.log('Upload Response.........:', uploadResponse.data);
                             onCapture(response.assets[0].uri, uploadResponse.data.path)
                         } catch (error) {
                             console.error('Upload Error:', error);
@@ -99,11 +103,11 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
                 });
 
             } else {
-                Alert.alert('Camera Permission', 'Camera permission is required to take pictures.');
+                Alert.alert(t('Camera Permission'), t('Camera permission is required to take pictures.'));
             }
         } catch (error) {
             console.error('Upload Error or Camera Permission Error:', error);
-            Alert.alert('Upload Error or Camera Permission Error:', error);
+            Alert.alert(t('Upload Error or Camera Permission Error:'), error);
 
         } finally {
             setCapture(false)
@@ -118,7 +122,7 @@ export default function CameraCapture({ onCapture, setIsCapturing }) {
                 {capture ? (
                     <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                    <Text style={styles.buttonText}>Click to capture the vehicle image</Text>
+                    <Text style={styles.buttonText}>{t("Click to capture the vehicle image")}</Text>
                 )}
             </TouchableOpacity>
         </>

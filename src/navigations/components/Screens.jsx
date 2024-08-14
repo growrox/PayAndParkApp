@@ -13,6 +13,7 @@ import VehiclePaymentEntry from '../../components/assistant/ticketScreens/Vehicl
 import AllAssitantTickets from '../../components/assistant/dashboard/AllAssitantTickets';
 import AssistantPage from '../../components/supervisorAndAccountant/assistanDetail/AssistantPage';
 import SupervisorPage from '../../components/supervisorAndAccountant/supervisorDetail/SupervisorPage';
+import SettledTickets from '../../components/supervisorAndAccountant/supervisorDetail/SettledTickets';
 
 
 const Stack = createStackNavigator();
@@ -56,6 +57,10 @@ export default function Screens() {
         {
             screen: 'SupervisorPage',
             component: SupervisorPage
+        },
+        {
+            screen: 'SettledTickets',
+            component: SettledTickets 
         },
 
     ]

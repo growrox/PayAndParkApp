@@ -9,11 +9,13 @@ import { SUPER_SETTLED_AMOUNT } from '../../../redux/types';
 import moment from 'moment';
 import AssistantHeader from '../assistanDetail/AssistantHeader';
 import ConfirmationModal from './ConfirmationModal';
+import { useTranslation } from 'react-i18next';
 
 export default function SupervisorPage({ navigation, route }) {
     const { supervisorData } = route.params
-    const { token, userId, isTicketSuperVisorSettled, role } = useSelector(state => state.auth);
+    const { token, userId, isTicketSuperVisorSettled, role, appLanguage } = useSelector(state => state.auth);
     const dispatch = useDispatch();
+    const { t } = useTranslation()
     const toast = useToast();
     const [supervisorStats, setSupervisorStats] = useState({
         cashCollection: '0',
@@ -31,281 +33,10 @@ export default function SupervisorPage({ navigation, route }) {
     const [isOpen, setOpen] = useState(false)
 
 
-    // const [parkingAssistants, setParkingAssistant] = useState([])
+    const [parkingAssistants, setParkingAssistant] = useState([])
 
-    const [parkingAssistants, setParkingAssistant] = useState([
-        {
-            "_id": "668154ccd54e76eb32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shiftgggggggg",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        },
-
-        {
-            "_id": "668154cecd54e76b32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        },
-        {
-            "_id": "66815ee4ccd54e76b32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54rre76b32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd5tt4e76b32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b3232rr7f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76brt32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54ge76b32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76rtgb32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b3232df7f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b323ss27f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b3232vv7f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76xxb32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b32zz327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        },
-        {
-            "_id": "668154ccd54e76bsa32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b32vx327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b32327xcvcxf1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76erweb32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd5ggh4e76b32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76jkjb32327f1c7",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b3232kli7f1c7ttt",
-            "name": "Hasan ",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shift",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        }, {
-            "_id": "668154ccd54e76b323weq27foooooooo",
-            "name": "Hasaniii",
-            "phone": "7218074913",
-            "isOnline": true,
-            "lastSettled": "2024-07-13T19:25:40.501Z",
-            "shiftDetails": {
-                "_id": "6682e39a33a494ad258e46eb",
-                "name": "Full Day Shiftffff",
-                "startTime": "12:00 AM",
-                "endTime": "11:59 PM"
-            }
-        },
-    ])
     useEffect(() => {
-        console.log("supervisorData", supervisorData);
+        // console.log("supervisorData", supervisorData);
         fetchSupervisorStats()
 
     }, [])
@@ -323,6 +54,9 @@ export default function SupervisorPage({ navigation, route }) {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage,
+                    'userId': userId
                 },
             });
 
@@ -377,6 +111,7 @@ export default function SupervisorPage({ navigation, route }) {
                     'x-client-source': 'app',
                     'userId': userId,
                     'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage
                 },
             });
 
@@ -432,13 +167,16 @@ export default function SupervisorPage({ navigation, route }) {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage,
+                    'userId': userId
                 },
                 body: JSON.stringify(apiData)
             });
 
             const data = await response.json();
-            console.log('handleSettleAmount data', data);
-            console.log('response.status data.message  data.error', response?.status, data?.message, data?.error)
+            // console.log('handleSettleAmount data', data);
+            // console.log('response.status data.message  data.error', response?.status, data?.message, data?.error)
             if (response.status === 200) {
                 toast.show(data.message, { type: 'success', placement: 'top' });
                 dispatch({
@@ -527,14 +265,14 @@ export default function SupervisorPage({ navigation, route }) {
 
     return (
         <View style={styles.container}>
-            <DashboardHeader headerText={'Profile'} secondaryHeaderText={'SUPERVISOR'} />
+            <DashboardHeader headerText={t('Profile')} secondaryHeaderText={t('SUPERVISOR')} />
             {isLoading ? (
                 <Spinner size={50} bottomMargin={20} />
             ) : (
                 <View style={styles.scrollContainer}>
                     <AssistantHeader
                         name={supervisorData.name}
-                        title={"Supervisor"}
+                        title={t("Supervisor")}
                     />
                     <View style={styles.cardContainer}>
                         <View style={styles.collectionCard}>
@@ -543,37 +281,37 @@ export default function SupervisorPage({ navigation, route }) {
                                     source={require('../../../utils/images/homeAssistant/rupee.png')}
                                     style={styles.cardIcon}
                                 />
-                                <Text style={styles.cardTitle}>Cash Collection</Text>
-                                <Text style={styles.cardAmount}>{supervisorStats.cashCollection} RS</Text>
+                                <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
+                                <Text style={styles.cardAmount}>{supervisorStats.cashCollection} {t("Rs")}</Text>
                             </View>
                             <View style={styles.cardRow}>
                                 <Image
                                     source={require('../../../utils/images/homeAssistant/credit-card.png')}
                                     style={styles.cardIcon}
                                 />
-                                <Text style={styles.cardTitle}>Total Rewards Paid</Text>
-                                <Text style={styles.cardAmount}>{supervisorStats.rewardPaid} RS</Text>
+                                <Text style={styles.cardTitle}>{t("Total Rewards Paid")}</Text>
+                                <Text style={styles.cardAmount}>{supervisorStats.rewardPaid} {t("Rs")}</Text>
                             </View>
                             <View style={styles.cardRow}>
                                 <Image
                                     source={require('../../../utils/images/homeAssistant/punishment.png')}
                                     style={styles.cardIcon}
                                 />
-                                <Text style={styles.cardTitle}>Total Fine Paid</Text>
-                                <Text style={styles.cardAmount}>{supervisorStats.finePaid} RS</Text>
+                                <Text style={styles.cardTitle}>{t("Total Fine Paid")}</Text>
+                                <Text style={styles.cardAmount}>{supervisorStats.finePaid} {t("Rs")}</Text>
                             </View>
                             <View style={styles.separator} />
                             <View style={styles.cardRow}>
-                                <Text style={styles.cardTitle}> Total Collection</Text>
-                                <Text style={styles.cardAmount}>{supervisorStats.totalCollection} RS</Text>
+                                <Text style={styles.cardTitle}> {t("Total Collection")}</Text>
+                                <Text style={styles.cardAmount}>{supervisorStats.totalCollection} {t("Rs")}</Text>
                             </View>
                             <View style={styles.cardRow}>
-                                <Text style={styles.cardTitle}> Total Payable</Text>
-                                <Text style={styles.cardAmount}>{supervisorStats.totalPayable} RS</Text>
+                                <Text style={styles.cardTitle}> {t("Total Payable")}</Text>
+                                <Text style={styles.cardAmount}>{supervisorStats.totalPayable} {t("Rs")}</Text>
                             </View>
                         </View>
                         <TouchableOpacity disabled={isSettling} style={{ ...styles.button, ...(isSettling && { opacity: 0.5 }) }} onPress={toggleModal}>
-                            <Text style={styles.buttonText}>Settle Amount</Text>
+                            <Text style={styles.buttonText}>{t("Settle Amount")}</Text>
                         </TouchableOpacity>
 
                         {isLoadingAssistData ? (
@@ -582,7 +320,7 @@ export default function SupervisorPage({ navigation, route }) {
 
                             <View style={{ marginTop: 5 }}>
                                 {parkingAssistants?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
-                                    <Text style={styles.phone}>No Assistant Found!</Text>
+                                    <Text style={styles.phone}>{t("No Assistant Found")}!</Text>
                                 </View> : <FlatList
                                     data={parkingAssistants}
                                     renderItem={renderTicket}

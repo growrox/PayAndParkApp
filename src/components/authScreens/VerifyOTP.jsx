@@ -2,13 +2,15 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Text, TouchableOpacity, TextInput, View, StyleSheet, ActivityIndicator } from 'react-native';
 import MainComponent from './MainComponent';
 import { useToast } from "react-native-toast-notifications";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AUTH_LOG_IN_SUCCESS } from '../../redux/types';
 import {
     getHash, removeListener,
     startOtpListener,
 } from 'react-native-otp-verify';
 import { url } from '../../utils/url';
+import { useTranslation } from 'react-i18next';
+
 
 const VerifyOTP = ({ navigation, route }) => {
     const { phoneNo, otpFromResponse } = route.params;
@@ -16,6 +18,8 @@ const VerifyOTP = ({ navigation, route }) => {
     const toast = useToast();
     const dispatch = useDispatch();
     const [isVerifyClicked, setVerifyClicked] = useState(false)
+    const { appLanguage, token, userId } = useSelector(state => state.auth);
+    const { t } = useTranslation();
     // ......... when otp will be sent on message for now temperarily it is uncommented  .........
     // useEffect(() => {
     //     if (otpFromResponse) setOTP(otpFromResponse)
@@ -46,7 +50,7 @@ const VerifyOTP = ({ navigation, route }) => {
 
     const handleVerifyOTP = useCallback(async () => {
         if (OTP.length !== 6) {
-            return toast.show('Please enter a valid OTP', { type: 'danger', placement: 'top' });
+            return toast.show(t('Please enter a valid OTP'), { type: 'danger', placement: 'top' });
         }
         setVerifyClicked(true)
         try {
@@ -56,19 +60,22 @@ const VerifyOTP = ({ navigation, route }) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage,
+                    'userId': userId
                 },
                 body: JSON.stringify({ phone: phoneNo, OTP }),
             });
 
             const data = await response.json();
 
-            console.log('data of response verifyOTP.......', data);
+            // console.log('data of response verifyOTP.......', data);
             // console.log('response.status', response.status);
 
             if (data.attempts === 0) return navigation.navigate('Login');
 
             if (response.status === 200) {
-                toast.show('You are signed in successfully!', { type: 'success', placement: 'top' });
+                toast.show(t('You are signed in successfully!'), { type: 'success', placement: 'top' });
                 dispatch({
                     type: AUTH_LOG_IN_SUCCESS,
                     payload: {
@@ -118,13 +125,13 @@ const VerifyOTP = ({ navigation, route }) => {
 
     return (
         <MainComponent
-            Title="HELLO"
-            Description="Good to see you back"
+            Title={t("HELLO")}
+            Description={t("Good to see you back")}
         >
             <View style={styles.container}>
                 <View style={styles.inputContainer}>
                     <TextInput
-                        placeholder="Enter Your OTP"
+                        placeholder={t("Enter Your OTP")}
                         placeholderTextColor="grey"
                         value={OTP}
                         onChange={handleOTPChange}
@@ -138,7 +145,7 @@ const VerifyOTP = ({ navigation, route }) => {
                     disabled={isVerifyClicked}
                 >
 
-                    {isVerifyClicked ? <ActivityIndicator size="small" color="#fff" /> : <Text disabled={isVerifyClicked} style={styles.signInButtonText}>VERIFY</Text>}
+                    {isVerifyClicked ? <ActivityIndicator size="small" color="#fff" /> : <Text disabled={isVerifyClicked} style={styles.signInButtonText}>{t("VERIFY")}</Text>}
                 </TouchableOpacity>
             </View>
         </MainComponent>

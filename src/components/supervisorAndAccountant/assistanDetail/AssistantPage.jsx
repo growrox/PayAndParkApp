@@ -10,10 +10,12 @@ import AssistantHeader from './AssistantHeader';
 import CashUpdateModal from './CashUpdateModal';
 import { SUPER_SETTLED_AMOUNT } from '../../../redux/types';
 import { AUTH_LOG_OUT } from '../../../redux/types';
+import { useTranslation } from 'react-i18next';
 
 export default function AssistantPage({ navigation, route }) {
   const { assistantData } = route.params
-  const { token, userId, isTicketSuperVisorSettled, role } = useSelector((store) => store.auth)
+  const { token, userId, isTicketSuperVisorSettled, role, appLanguage } = useSelector((store) => store.auth)
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const toast = useToast();
   const [assistantPageStats, setAssistantStats] = useState({
@@ -82,16 +84,17 @@ export default function AssistantPage({ navigation, route }) {
           'x-client-source': 'app',
           'userId': assistantData._id,
           'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
         },
       });
 
       const data = await response.json();
-      console.log('fetchAssistantPageStats data:', data);
-      console.log('fetchAssistantPageStats status:', response.status);
+      // console.log('fetchAssistantPageStats data:', data);
+      // console.log('fetchAssistantPageStats status:', response.status);
       if (response.status == 200) {
         const rewardMoney = ((data?.result?.TotalCash + data?.result?.TotalOnline) - assistantPageStats?.finePaid) >= 2000 ? 200 : 0
 
-        console.log("hit 200...........");
+        // console.log("hit 200...........");
 
         setAssistantStats({
           cashCollection: data.result.TotalCash,
@@ -102,7 +105,7 @@ export default function AssistantPage({ navigation, route }) {
           totalCollection: data.result.TotalAmount,
         })
       } else if (response.status === 401 || response.status === 406) {
-        console.log("hit 406...........");
+        // console.log("hit 406...........");
         dispatch({
           type: AUTH_LOG_OUT,
           payload: {
@@ -143,25 +146,25 @@ export default function AssistantPage({ navigation, route }) {
       if (assistantPageStats.cashCollection > 0) {
         if (assistantPageStats.cashCollection > (+assistantPageStats.finePaid + +assistantPageStats.rewardPaid) &&
           assistantPageStats.cashCollection !== (+calculateTotal() + +assistantPageStats.finePaid + +assistantPageStats.rewardPaid)) {
-          return toast.show("please check the cash collection amount", { type: 'warning', placement: 'top' });
+          return toast.show(t("please check the cash collection amount"), { type: 'warning', placement: 'top' });
         }
       }
 
       if (fineChecked && +assistantPageStats.finePaid < 1) {
-        return toast.show("please add a fine amount.", { type: 'warning', placement: 'top' });
+        return toast.show(t("please add a fine amount"), { type: 'warning', placement: 'top' });
       }
 
       if (+assistantPageStats.rewardPaid === 0 && +assistantPageStats.finePaid === 0 && +assistantPageStats.totalPayable !== +calculateTotal()) {
-        return toast.show("Cash amount and total payable is not matching.", { type: 'warning', placement: 'top' });
+        return toast.show(t("Cash amount and total payable is not matching"), { type: 'warning', placement: 'top' });
       }
 
       if (+assistantPageStats.totalPayable < (+assistantPageStats.finePaid + +assistantPageStats.rewardPaid) && +calculateTotal() > 0) {
-        return toast.show("Cash amount and total payable is not matching.", { type: 'warning', placement: 'top' });
+        return toast.show(t("Cash amount and total payable is not matching"), { type: 'warning', placement: 'top' });
       }
 
       if (+assistantPageStats.cashCollection !== 0) {
         if ((+assistantPageStats.finePaid > 0 || +assistantPageStats.rewardPaid > 0) && +assistantPageStats.cashCollection === calculateTotal()) {
-          return toast.show("Cash collection amount is more than expected .", { type: 'warning', placement: 'top' });
+          return toast.show(t("Cash collection amount is more than expected"), { type: 'warning', placement: 'top' });
         }
       }
       console.log("+calculateTotal()  +assistantPageStats.rewardPaid +assistantPageStats.finePaid", +calculateTotal(), "  ", +assistantPageStats.rewardPaid, "  ", +assistantPageStats.finePaid);
@@ -182,6 +185,9 @@ export default function AssistantPage({ navigation, route }) {
         headers: {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage,
+          'userId': userId
         },
         body: JSON.stringify(apiData)
       });
@@ -238,14 +244,14 @@ export default function AssistantPage({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <DashboardHeader headerText={'Profile'} secondaryHeaderText={'SUPERVISOR'} />
+      <DashboardHeader headerText={t('Profile')} secondaryHeaderText={'SUPERVISOR'} />
       {isLoading ? (
         <Spinner size={50} bottomMargin={20} />
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <AssistantHeader
             name={assistantData.name}
-            title={"Parking Assistant"}
+            title={t("Parking Assistant")}
           />
           <View style={styles.cardContainer}>
             <View style={styles.collectionCard}>
@@ -254,65 +260,65 @@ export default function AssistantPage({ navigation, route }) {
                   source={require('../../../utils/images/homeAssistant/rupee.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Cash Collection</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.cashCollection} RS</Text>
+                <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.cashCollection} {t("Rs")}</Text>
               </View>
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/credit-card.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Online Collection</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.onlineCollection} RS</Text>
+                <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.onlineCollection} {t("Rs")}</Text>
               </View>
               {(fineChecked && assistantPageStats.finePaid > 0) && <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/punishment.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Fine Paid</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.finePaid} RS</Text>
+                <Text style={styles.cardTitle}>{t("Fine Paid")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.finePaid} {t("Rs")}</Text>
               </View>}
               {assistantPageStats.rewardPaid > 0 && <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>Total Rewards</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.rewardPaid} RS</Text>
+                <Text style={styles.cardTitle}>{t("Total Rewards")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.rewardPaid} {t("Rs")}</Text>
               </View>}
               <View style={styles.separator} />
               <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>Total Payable</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.totalPayable - assistantPageStats.finePaid} RS</Text>
+                <Text style={styles.cardTitle}>{t("Total Payable")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.totalPayable - assistantPageStats.finePaid} {t("Rs")}</Text>
               </View>
               <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>Total Collection</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.totalCollection} RS</Text>
+                <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.totalCollection} {t("Rs")}</Text>
               </View>
             </View>
             <View style={styles.customCheckboxContainer}>
               <CustomCheckbox
-                title="Parking Assistant Fine"
+                title={t("Parking Assistant Fine")}
                 isChecked={fineChecked}
                 onPress={() => setFineChecked(!fineChecked)}
               />
               <View style={{ margin: 6 }}></View>
               {fineChecked && <TextInput
                 style={styles.input}
-                placeholder="Enter Fine Amount"
+                placeholder={t("Enter Fine Amount")}
                 value={assistantPageStats.finePaid}
                 onChangeText={handleFineAmountChange}
                 keyboardType="numeric"
                 editable={fineChecked}
               />}
             </View>
-            <Text style={styles.heading}>Collected Cash</Text>
+            <Text style={styles.heading}>{t("Collected Cash")}</Text>
             <View style={styles.table}>
               <View style={[styles.row, styles.headerRow]}>
-                <Text style={styles.headerCell}>Cash Denotions</Text>
-                <Text style={styles.headerCell}>Cash Count</Text>
-                <Text style={styles.headerCell}>Total</Text>
+                <Text style={styles.headerCell}>{t("Cash Denotions")}</Text>
+                <Text style={styles.headerCell}>{t("Cash Count")}</Text>
+                <Text style={styles.headerCell}>{t("Total")}</Text>
               </View>
               {cashData.map((item) => (
                 <View key={item.id} style={styles.row}>
@@ -322,17 +328,17 @@ export default function AssistantPage({ navigation, route }) {
                 </View>
               ))}
               <View style={[styles.footerRow]}>
-                <Text style={styles.footerCell}>Total</Text>
+                <Text style={styles.footerCell}>{t("Total")}</Text>
                 <Text style={styles.footerCell}></Text>
                 <Text style={styles.footerCell}>{calculateTotal()}</Text>
               </View>
             </View>
             <View style={styles.buttonContainer}>
               <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.button, { backgroundColor: '#D9D9D9', marginRight: 10, }]}>
-                <Text style={{ ...styles.buttonText, color: '#000', }} >Update Cash</Text>
+                <Text style={{ ...styles.buttonText, color: '#000', }} >{t("Update Cash")}</Text>
               </TouchableOpacity>
               <TouchableOpacity disabled={isSettling} onPress={handleSettleAmount} style={{ ...styles.button, backgroundColor: '#223C83', ...(isSettling && { opacity: 0.5 }) }}>
-                <Text style={styles.buttonText}>Settle Amount</Text>
+                <Text style={styles.buttonText}>{t("Settle Amount")}</Text>
               </TouchableOpacity>
             </View>
           </View>

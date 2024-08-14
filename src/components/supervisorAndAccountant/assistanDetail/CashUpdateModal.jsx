@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, TextInput } from 'react-native';
 
 const CashUpdateModal = ({ isVisible, onClose, cashData, setCashData }) => {
     const [cashCountData, setCashCountData] = useState(cashData);
+    const { t } = useTranslation();
     // useEffect(() => {
     //     console.log('cashData', cashData);
     // }, [])
@@ -32,7 +34,7 @@ const CashUpdateModal = ({ isVisible, onClose, cashData, setCashData }) => {
 
     const handleConfirm = () => {
         setCashData(cashCountData);
-        console.log("cashCountData.......", cashCountData);
+        // console.log("cashCountData.......", cashCountData);
         onClose();
     };
 
@@ -53,10 +55,10 @@ const CashUpdateModal = ({ isVisible, onClose, cashData, setCashData }) => {
                 <View style={styles.modalContainer}>
                     <TouchableWithoutFeedback>
                         <View style={styles.modalContent}>
-                            <Text style={styles.titleTop}>Provide Cash Count</Text>
+                            <Text style={styles.titleTop}>{t("Provide Cash Count")}</Text>
                             {cashCountData.map((data) => (
                                 <View key={data.id} style={styles.row}>
-                                    <Text style={styles.denominationText}>{data.denomination} RS</Text>
+                                    <Text style={styles.denominationText}>{data.denomination} {t("Rs")}</Text>
                                     <View style={styles.counterContainer}>
                                         <TouchableOpacity onPress={() => decrement(data.id)} style={styles.button}>
                                             <Text style={styles.buttonText}>-</Text>
@@ -79,7 +81,7 @@ const CashUpdateModal = ({ isVisible, onClose, cashData, setCashData }) => {
                                 </View>
                             ))}
                             <TouchableOpacity onPress={handleConfirm} style={styles.confirmButton}>
-                                <Text style={styles.confirmButtonText}>Confirm</Text>
+                                <Text style={styles.confirmButtonText}>{t("Confirm")}</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableWithoutFeedback>

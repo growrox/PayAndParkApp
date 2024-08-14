@@ -1,9 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 
 const SuccessModal = ({ isVisible }) => {
     const navigation = useNavigation();
+    const { t } = useTranslation();
 
     const onNavigateHome = () => {
         navigation.navigate('Home');
@@ -21,10 +23,10 @@ const SuccessModal = ({ isVisible }) => {
         >
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
-                    <Text style={styles.modalText}>✓ Successfully Created</Text>
-                    <Text style={styles.modalSubText}>Your ticket has been created successfully.</Text>
+                    <Text style={styles.modalText}>✓ {t("Successfully Created")}</Text>
+                    <Text style={styles.modalSubText}>{t("Your ticket has been created successfully")}.</Text>
                     <TouchableOpacity style={styles.modalButton} onPress={onNavigateHome}>
-                        <Text style={styles.modalButtonText}>Go to Home Page</Text>
+                        <Text style={styles.modalButtonText}>{t("Go to Home Page")}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

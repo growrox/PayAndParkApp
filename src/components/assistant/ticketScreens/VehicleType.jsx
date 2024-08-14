@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { Text, View, TouchableOpacity, ScrollView, StyleSheet, Image } from 'react-native';
 import DashboardHeader from '../../DashboardHeader';
+import { useTranslation } from 'react-i18next';
 
 export default function VehicleType({ navigation, route }) {
+
+    const { t } = useTranslation();
 
     const { vehicleTypes } = route.params;
 
@@ -14,12 +17,12 @@ export default function VehicleType({ navigation, route }) {
     return (
         <View style={styles.container}>
             <DashboardHeader
-                headerText={'Profile'}
+                headerText={t('Profile')}
                 secondaryHeaderText={'ASSISTANT'}
             />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.subHeader}>
-                    <Text style={styles.subHeaderText}>Select Vehicle Type</Text>
+                    <Text style={styles.subHeaderText}>{t("Select Vehicle Type")}</Text>
                 </View>
 
                 <View style={styles.cardContainer}>

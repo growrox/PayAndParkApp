@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Image, ActivityIndicator } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../redux/types';
+import { AUTH_LOG_OUT, ASSISTANT_CLOCK, APP_LANGUAGE } from '../../redux/types';
 import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../utils/url';
 import { Picker } from '@react-native-picker/picker';
@@ -12,9 +12,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHeaderText }) => {
-    const { isClockedIn, userId, token, phoneNo, name, shiftDetails, role, code } = useSelector(state => state.auth)
+    const { isClockedIn, userId, token, phoneNo, name, shiftDetails, role, code, appLanguage } = useSelector(state => state.auth)
     const [isLoading, setLoading] = React.useState(false)
-    const [currentLanguage, setCurrentLanguage] = React.useState('en');
     const toast = useToast();
     const dispatch = useDispatch();
     const { t, i18n } = useTranslation();
@@ -23,11 +22,15 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
         setModalVisible(false);
     };
 
+    // React.useEffect(() => {
+    //     console.log("appLanguage fromn profile", appLanguage);
+    // }, [])
+
     const handleChangeLanguage = async (language) => {
         try {
             await i18n.changeLanguage(language);
             await AsyncStorage.setItem('language', language);
-            setCurrentLanguage(language);
+            dispatch({ type: APP_LANGUAGE, payload: { appLanguage: language } });
         } catch (error) {
             console.error("error on handleChangeLanguage", error);
         }
@@ -43,11 +46,16 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                 headers: {
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage,
+                    'userId': userId
                 },
             });
 
             const data = await response.json();
-            // console.log('clockin data', data);
+            console.log('clockin data', data);
+            console.log("clockin status", response.status);
+
             if (response.status === 200) {
                 dispatch({
                     type: ASSISTANT_CLOCK,
@@ -97,7 +105,8 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                     'Content-Type': 'application/json',
                     'x-client-source': 'app',
                     'userId': userId,
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'client-language': appLanguage
                 },
             });
 
@@ -155,7 +164,7 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                 name: ""
             },
         });
-        toast.show('You are logged out successfully!', { type: 'warning' });
+        toast.show(t('You are logged out successfully!'), { type: 'warning' });
     };
 
     return (
@@ -215,8 +224,10 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
                             <View style={styles.languagePicker}>
                                 <Text style={styles.languageLabel}>{t("Language")}: </Text>
                                 <Picker
-                                    selectedValue={currentLanguage}
+                                    selectedValue={appLanguage || i18n.language}
                                     style={styles.picker}
+                                    selectionColor={'red'}
+                                    dropdownIconColor={'#000'}
                                     onValueChange={(itemValue) => handleChangeLanguage(itemValue)}
                                 >
                                     <Picker.Item style={styles.pickerItem} label="English" value="en" />
@@ -283,6 +294,7 @@ const styles = StyleSheet.create({
     languageLabel: {
         fontSize: 16,
         fontWeight: '500',
+        marginLeft: 15
     },
     picker: {
         height: 52,
@@ -290,6 +302,7 @@ const styles = StyleSheet.create({
     },
     pickerItem: {
         fontSize: 14,
+        color: "#000"
     },
     header: {
         width: '100%',

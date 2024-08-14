@@ -5,16 +5,21 @@ import { useNavigation } from '@react-navigation/native';
 import { AUTH_LOG_OUT } from '../../redux/types';
 import { useToast } from "react-native-toast-notifications";
 import { url } from '../../utils/url';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Login = () => {
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
   const navigation = useNavigation();
+  const { appLanguage, token, userId } = useSelector(state => state.auth);
   const [phoneNo, setPhoneNo] = useState('');
   const toast = useToast();
   const [isLoginClicked, setLoginClicked] = useState(false)
 
   const handleSignInPress = useCallback(async () => {
     if (phoneNo.length < 3) {
-      return toast.show("Please enter a valid phone number", { type: 'danger', placement: 'top' });
+      return toast.show(t("Please enter a valid phone number"), { type: 'danger', placement: 'top' });
     }
     setLoginClicked(true)
 
@@ -25,12 +30,17 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
           'x-client-source': 'app',
+          'client-language': appLanguage,
+          'Authorization': `Bearer ${token}`,
+          'userId': userId
         },
         body: JSON.stringify({ phone: phoneNo }),
       });
 
       const data = await response?.json();
-      // console.log('data of response.......', data);
+      console.log('data of response.......', data);
+      console.log('response.status', response.status);
+      
 
       if (response.status === 200) {
         toast.show(data.message, { type: 'success', placement: 'top' });
@@ -72,14 +82,14 @@ const Login = () => {
 
   return (
     <MainComponent
-      Title="Welcome"
-      Description="Verify your number to access your account"
+      Title={t("Welcome")}
+      Description={t("Verify your number to access your account")}
     >
       <>
         <View style={styles.container}>
           <View style={styles.inputContainer}>
             <TextInput
-              placeholder="Enter Phone Number"
+              placeholder={t("Enter Phone Number")}
               placeholderTextColor="grey"
               value={phoneNo}
               onChange={handlePhoneNoChange}
@@ -94,11 +104,11 @@ const Login = () => {
           >
             {isLoginClicked ?
               <ActivityIndicator size="small" color="#fff" /> :
-              <Text style={styles.signInButtonText}>SIGN IN</Text>}
+              <Text style={styles.signInButtonText}>{t("SIGN IN")}</Text>}
           </TouchableOpacity>
           <View style={styles.footer}>
             <Text disabled={isLoginClicked} style={styles.footerText} onPress={handleSignupPress}>
-              Don't have an account? Create one.
+              {t("Don't have an account? Create one")}.
             </Text>
           </View>
         </View>
