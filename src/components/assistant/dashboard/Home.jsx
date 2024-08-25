@@ -9,6 +9,7 @@ import { AUTH_LOG_OUT, ASSISTANT_CLOCK } from '../../../redux/types';
 import moment from 'moment';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { useTranslation } from 'react-i18next';
+import { Picker } from '@react-native-picker/picker';
 
 
 export default function Home({ navigation }) {
@@ -20,13 +21,15 @@ export default function Home({ navigation }) {
     onlineCollection: '',
     totalPayable: '',
     totalCollection: '',
-    bonus: ''
-
+    bonus: '',
+    totalTickets: '',
+    vehicleTypes: []
   })
   const [isLoading, setLoading] = React.useState(true)
   const [isCreateTicket, setCreateTicket] = React.useState(false)
   const [recentTickets, setRecentTickets] = React.useState([]);
   const { t } = useTranslation();
+  const [isVehicleTypeView, setVehicleTypeView] = React.useState(false);
 
 
   const requestCameraPermission = async () => {
@@ -132,17 +135,21 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      // console.log('data of response.......', data);
+      // console.log('data.result.VehicleTypes.......', data.result.VehicleTypes);
+      console.log('data.result.......', data.result);
+
 
       if (response.status === 200) {
-        const { TotalAmount, TotalCash, TotalOnline, LastSettledDate } = data.result
+        const { TotalAmount, TotalCash, TotalOnline, LastSettledDate, TotalTickets, VehicleTypes } = data.result
         const calcPayable = TotalAmount - TotalOnline
         setAssistantStats({
           cashCollection: TotalCash,
           onlineCollection: TotalOnline,
           totalPayable: calcPayable,
           totalCollection: TotalAmount,
-          bonus: TotalAmount >= 2000 ? 200 : 0
+          bonus: TotalAmount >= 2000 ? 200 : 0,
+          totalTickets: TotalTickets,
+          vehicleTypes: VehicleTypes
         })
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
@@ -343,6 +350,56 @@ export default function Home({ navigation }) {
           </View>
 
           <View style={styles.cardContainer}>
+            <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
+
+              <TouchableOpacity onPress={() => setVehicleTypeView((prev) => !prev)} >
+                <View style={{ ...styles.cardRow, position: 'relative' }}>
+                  <Image
+                    source={require('../../../utils/images/homeAssistant/ticket.png')}
+                    style={{ ...styles.cardIcon, marginRight: 10 }}
+                  />
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={styles.cardTitle}>{t("Total Tickets")}</Text>
+                    <View>
+
+                      <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{assistantStats.totalTickets}</Text>
+                      <Image
+                        source={require('../../../utils/images/homeAssistant/bottom-arrow.png')}
+                        style={{
+                          position: 'absolute',
+                          width: 20,
+                          height: 20,
+                          right: -5,
+                          top: 1,
+                          transform: [
+                            {
+                              rotate: isVehicleTypeView ? '180deg' : '0deg'
+                            }
+                          ]
+                        }}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+
+              {isVehicleTypeView && <>
+
+                <View style={{ ...styles.separator, marginBottom: 10 }} />
+                {assistantStats?.vehicleTypes.length > 0 ? assistantStats?.vehicleTypes?.map((da, i) =>
+                (<View key={i} style={styles.cardRow}>
+                  <Text style={styles.cardTitle}>{da.vehicleType}</Text>
+                  <Text style={styles.cardAmount}>{da.TicketCount}</Text>
+                </View>)
+                ) : <Text style={{ textAlign: 'center', color: '#fff',fontSize: 16 }}>{t("No tickets to show")}!</Text>
+              }
+              </>}
+
+            </View>
+          </View>
+
+          <View style={styles.cardContainer}>
             <View style={[styles.BonusCard, styles.bonusContainer]}>
               <View style={styles.cardRow}>
                 <Image
@@ -363,6 +420,11 @@ export default function Home({ navigation }) {
             )}
           </TouchableOpacity>
 
+
+
+
+
+          {/* recent parking tickets */}
           <View style={styles.recentTicketsHeader}>
             <Text style={styles.recentTicketsTitle}>{t("Recent Parking Tickets")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')}>
@@ -390,7 +452,7 @@ export default function Home({ navigation }) {
                       <View style={styles.separator} />
                       <View style={styles.ticketRow}>
                         <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
-                        <Text style={styles.ticketText}>{item.paymentMode}</Text>
+                        <Text style={styles.ticketText}>{`${item.amount}/${item.paymentMode}`}</Text>
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -399,6 +461,9 @@ export default function Home({ navigation }) {
               })
             }
           </>}
+          {/* end */}
+
+
 
 
         </ScrollView>
@@ -428,7 +493,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   cardContainer: {
-    marginBottom: 16,
+    marginBottom: 6,
   },
   collectionCard: {
     backgroundColor: '#167afa',
@@ -529,5 +594,13 @@ const styles = StyleSheet.create({
   ticketText: {
     fontSize: 14,
     color: '#000',
+  },
+  picker: {
+    height: 52,
+    width: 40,
+  },
+  pickerItem: {
+    fontSize: 14,
+    color: "#000"
   },
 });

@@ -126,7 +126,7 @@ export default function AllAssitantTickets({ navigation }) {
 
                 <View style={styles.ticketRow}>
                     <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
-                    <Text style={styles.ticketText}>{item.paymentMode}</Text>
+                    <Text style={styles.ticketText}>{`${item.amount}/${item.paymentMode}`}</Text>
                 </View>
             </View>
         </TouchableOpacity>

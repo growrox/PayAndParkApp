@@ -132,6 +132,7 @@
         "Select Vehicle Type": "वाहन प्रकार निवडा",
         "Unsettled": "निपटालेले नाही",
         "Show QR": "QR दाखवा",
-        "Please enter a vehicle number with at least 10 characters": "कमीशन 10 वर्णांमध्ये वाहन संख्या टाका"
+        "Please enter a vehicle number with no more than 10 characters": "कृपया 10 अक्षांशाचे वाहन नंबर टाका",
+        "No tickets to show": "कोणत्याही टिकट दाखविले नाही"
     }
 }

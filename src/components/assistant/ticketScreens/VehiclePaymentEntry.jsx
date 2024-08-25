@@ -11,7 +11,8 @@ import CameraCaptureModal from './CameraCaptureModal';
 import Geolocation from 'react-native-geolocation-service';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
-
+import VehicleSearchBar from './VehicleSearchBar';
+import { Spinner } from '../../../utils/Spinner';
 
 const requestLocationPermission = async () => {
     try {
@@ -65,7 +66,11 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     const [location, setLocation] = useState(false);
     const { t } = useTranslation();
     const { appLanguage, token, userId } = useSelector(state => state.auth);
-
+    const [vehicleSearchInput, setVehicleSearchInput] = useState('');
+    const [recentVehicleNumbers, setRecentVehicleNumbers] = useState([]);
+    const [selectedVechicleNumberId, setSelectedVechicleNumberId] = useState('');
+    const [debouncedSearchInput, setDebouncedSearchInput] = useState(vehicleSearchInput);
+    const [isNewVihicle, setIsNewVihicle] = useState(false);
     const toast = useToast();
 
     const handleSelectMethod = (method) => {
@@ -77,9 +82,99 @@ export default function VehiclePaymentEntry({ navigation, route }) {
         getLocation()
     }, [])
 
+    useEffect(() => {
+        // console.log("recentVehicleNumbers", recentVehicleNumbers);
+        // console.log("selectedVechicleNumberId", selectedVechicleNumberId);
+        if (selectedVechicleNumberId && recentVehicleNumbers.length > 0) {
+            const filteredVehicleData = recentVehicleNumbers.filter(item => item._id === selectedVechicleNumberId);
+            console.log("filteredVehicleData", filteredVehicleData);
+            if (filteredVehicleData.length > 0) {
+                const [vehicleData] = filteredVehicleData;
+                console.log("vehicleData", vehicleData);
+                setVehicleNumber(vehicleData.vehicleNumber)
+                setPhoneNumber(vehicleData.phoneNumber)
+                setName(vehicleData.name)
+                setIsNewVihicle(false)
+            }
+        }
+    }, [selectedVechicleNumberId, recentVehicleNumbers]);
+
+    useEffect(() => {
+        console.log("vehicleSearchInput-------------", vehicleSearchInput);
+
+        const handler = setTimeout(() => {
+            setDebouncedSearchInput(vehicleSearchInput);
+        }, 1000);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [vehicleSearchInput]);
+
+    useEffect(() => {
+
+        if (debouncedSearchInput.length > 3) {
+            console.log("debouncedSearchInput", debouncedSearchInput);
+            
+            fetchRecentVehiclehNumber();
+        } else if (debouncedSearchInput.length === 0) {
+            setRecentVehicleNumbers([]);
+        }
+    }, [debouncedSearchInput]);
+
+    const fetchRecentVehiclehNumber = async () => {
+        try {
+            const response = await fetch(`${url}/api/v1/ticket/previous?vehicleType=${selectedVehicle}&vehicleNumber=${vehicleSearchInput}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-client-source': 'app',
+                    'userId': userId,
+                    'Authorization': `Bearer ${token}`,
+                    'page': 'home',
+                    'client-language': appLanguage
+                },
+            });
+
+            const data = await response.json();
+            console.log('fetchRecentVehiclehNumber data', data);
+            console.log('fetchRecentVehiclehNumber status', response.status);
+
+            if (response.status === 200) {
+                setRecentVehicleNumbers(data?.result || []);
+            } else if (response.status === 401 || response.status === 406) {
+                dispatch({
+                    type: AUTH_LOG_OUT,
+                    payload: {
+                        token: "",
+                        location: "",
+                        role: "",
+                        phoneNo: "",
+                        userId: "",
+                        name: ""
+                    }
+                });
+            } else {
+                const toastType = response.status >= 400 ? 'danger' : 'warning';
+                const messageData = data.message
+                // console.log('messageData', messageData);
+                toast.show(messageData, { type: toastType, placement: 'top' });
+                setIsNewVihicle(true)
+                // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+            }
+        } catch (error) {
+            // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+            console.log('error.message', error.message);
+        } finally {
+            setVehicleNumber('')
+            setSelectedVechicleNumberId('')
+        }
+    }
+
+
     const handleSubmit = async () => {
-        if (!vehicleNumber || vehicleNumber.replace(/\s+/g, '').length < 10) {
-            toast.show(t('Please enter a vehicle number with at least 10 characters'), { type: 'warning', placement: 'top' });
+        if (!vehicleNumber || vehicleNumber.replace(/\s+/g, '').length > 10) {
+            toast.show(t('Please enter a vehicle number with no more than 10 characters'), { type: 'warning', placement: 'top' });
             return;
         }
         if (phoneNumber.length !== 10) {
@@ -332,6 +427,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 headerText={t('Profile')}
                 secondaryHeaderText={'ASSISTANT'}
             />
+
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.subHeader}>
                     <Text style={styles.subHeaderText}>{t("Vehicle Payment Entry")}</Text>
@@ -339,19 +435,27 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
                 <View>
                     {selectedTime !== 'All Month Pass' && <>
+                        <VehicleSearchBar
+                            recentVehicleNumbers={recentVehicleNumbers}
+                            vehicleSearchInput={vehicleSearchInput}
+                            setVehicleSearchInput={setVehicleSearchInput}
+                            selectedVechicleNumberId={selectedVechicleNumberId}
+                            setSelectedVechicleNumberId={setSelectedVechicleNumberId}
+                        />
+                        {isNewVihicle ? <TextInput
+                            style={styles.input}
+                            value={vehicleNumber}
+                            placeholder={t('Enter Vehicle Number')}
+                            placeholderTextColor={'grey'}
+                            onChangeText={setVehicleNumber}
+                        /> : <></>}
+
                         <TextInput
                             style={styles.input}
                             value={name}
                             placeholder={t('Enter vehicle Owner Name')}
                             placeholderTextColor={'grey'}
                             onChangeText={setName}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            value={vehicleNumber}
-                            placeholder={t('Enter Vehicle Number')}
-                            placeholderTextColor={'grey'}
-                            onChangeText={setVehicleNumber}
                         />
                         <TextInput
                             style={styles.input}
@@ -499,6 +603,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                     <Text style={styles.buttonText}>{t("Submit")}</Text>
                 </TouchableOpacity>}
             </ScrollView >
+
 
             <CameraCaptureModal
                 isVisible={isCapture.capturing}
