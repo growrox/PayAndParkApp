@@ -131,6 +131,7 @@
         "You are logged out successfully!":"You are logged out successfully!",
         "Select Vehicle Type":"Select Vehicle Type",
         "Unsettled":"Unsettled",
-        "Show QR":"Show QR"
+        "Show QR":"Show QR",
+        "Please enter a vehicle number with at least 10 characters":"Please enter a vehicle number with at least 10 characters"
     }
 }

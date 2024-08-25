@@ -155,12 +155,18 @@ export default function AssistantPage({ navigation, route }) {
       }
 
       if (+assistantPageStats.rewardPaid === 0 && +assistantPageStats.finePaid === 0 && +assistantPageStats.totalPayable !== +calculateTotal()) {
-        return toast.show(t("Cash amount and total payable is not matching"), { type: 'warning', placement: 'top' });
+        console.log("1+calculateTotal()  +assistantPageStats.rewardPaid +assistantPageStats.finePaid", +calculateTotal(), "  ",
+          +assistantPageStats.rewardPaid, "  ", +assistantPageStats.finePaid);
+
+        return toast.show(t("Cash amount and total payable is not matching1"), { type: 'warning', placement: 'top' });
       }
 
-      if (+assistantPageStats.totalPayable < (+assistantPageStats.finePaid + +assistantPageStats.rewardPaid) && +calculateTotal() > 0) {
-        return toast.show(t("Cash amount and total payable is not matching"), { type: 'warning', placement: 'top' });
-      }
+      // if (+assistantPageStats.totalPayable < 0(+assistantPageStats.finePaid + +assistantPageStats.rewardPaid) && +calculateTotal() > 0) {
+      //   console.log("2+assistantPageStats.totalPayable < (+assistantPageStats.finePaid + +assistantPageStats.rewardPaid) && +calculateTotal() > 0",
+      //     +assistantPageStats.totalPayable, "  ", (+assistantPageStats.finePaid + +assistantPageStats.rewardPaid), "  ", +calculateTotal());
+
+      //   return toast.show(t("Cash amount and total payable is not matching2"), { type: 'warning', placement: 'top' });
+      // }
 
       if (+assistantPageStats.cashCollection !== 0) {
         if ((+assistantPageStats.finePaid > 0 || +assistantPageStats.rewardPaid > 0) && +assistantPageStats.cashCollection === calculateTotal()) {
@@ -240,6 +246,12 @@ export default function AssistantPage({ navigation, route }) {
     }))
 
   }
+
+  const handleUpdateCash = () => {
+    if (+assistantPageStats.totalPayable <= 0) return toast.show(t("Total payable amount should be greater than 0"), { type: 'warning', placement: 'top' });
+      setModalVisible(true)
+  }
+
 
 
   return (
@@ -334,7 +346,7 @@ export default function AssistantPage({ navigation, route }) {
               </View>
             </View>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={() => setModalVisible(true)} style={[styles.button, { backgroundColor: '#D9D9D9', marginRight: 10, }]}>
+              <TouchableOpacity onPress={() => handleUpdateCash()} style={[styles.button, { backgroundColor: '#D9D9D9', marginRight: 10, }]}>
                 <Text style={{ ...styles.buttonText, color: '#000', }} >{t("Update Cash")}</Text>
               </TouchableOpacity>
               <TouchableOpacity disabled={isSettling} onPress={handleSettleAmount} style={{ ...styles.button, backgroundColor: '#223C83', ...(isSettling && { opacity: 0.5 }) }}>

@@ -43,7 +43,7 @@ const PaymentDetails = ({ navigation, route }) => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        // console.log("userEnteredData", userEnteredData);
+        console.log("userEnteredData", userEnteredData);
         if (userEnteredData) {
             if (userEnteredData.type === 'ticketDetailsPreview') {
                 setDetails({
@@ -209,6 +209,7 @@ const PaymentDetails = ({ navigation, route }) => {
 
     // }, [])
 
+    // temporary code for a qr code as client dont have online setup properly 
     const handleConfirm = async () => {
         const { vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks } = details;
         // console.log('paymentMode:', paymentMode);
@@ -221,19 +222,7 @@ const PaymentDetails = ({ navigation, route }) => {
 
         try {
             setConfirmLoader(true)
-            let paymentResult;
-            if (paymentMode === "Online") {
-                paymentResult = await initiatePayment();
-                console.log('Payment Result:', paymentResult);
 
-                if (!paymentResult.result) {
-                    await deleteOrder(paymentResult.ref_id);
-                    return;
-                } else {
-                    await successPayment(paymentResult.result)
-                }
-            }
-            console.log('paymentResult.ref_id', paymentResult?.ref_id);
             const apiData = {
                 vehicleType: userEnteredData.selectedVehicle,
                 duration: duration === 'All Month Pass' ? 0 : duration,
@@ -243,7 +232,7 @@ const PaymentDetails = ({ navigation, route }) => {
                 amount: paymentMode === 'Free' ? 0 : amount,
                 image: userEnteredData.vehicleImage.path,
                 remarks,
-                onlineTransactionId: paymentMode === 'Online' ? paymentResult.ref_id : "",
+                onlineTransactionId: paymentMode === 'Online' ? "668173dbd607b64798e92929" : "",
                 name: details.name,
                 createdAtClient: moment().utcOffset("+05:30").format(),
                 address: userEnteredData.address,
@@ -295,11 +284,98 @@ const PaymentDetails = ({ navigation, route }) => {
         }
     };
 
+    // permanent code but temporarily commented
+    // const handleConfirm = async () => {
+    //     const { vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks } = details;
+    //     // console.log('paymentMode:', paymentMode);
+    //     // console.log('Details:', vehicleNumber, phoneNumber, paymentMode, amount, duration, remarks);
+    //     // console.log("amount:", amount);
+
+    //     // if (!amount && paymentMode !== 'Free') {
+    //     //     return toast.show("Please enter an amount.", { type: 'warning', placement: 'top' });
+    //     // }
+
+    //     try {
+    //         setConfirmLoader(true)
+    //         let paymentResult;
+    //         if (paymentMode === "Online") {
+    //             paymentResult = await initiatePayment();
+    //             console.log('Payment Result:', paymentResult);
+
+    //             if (!paymentResult.result) {
+    //                 await deleteOrder(paymentResult.ref_id);
+    //                 return;
+    //             } else {
+    //                 await successPayment(paymentResult.result)
+    //             }
+    //         }
+    //         console.log('paymentResult.ref_id', paymentResult?.ref_id);
+    //         const apiData = {
+    //             vehicleType: userEnteredData.selectedVehicle,
+    //             duration: duration === 'All Month Pass' ? 0 : duration,
+    //             paymentMode,
+    //             vehicleNumber,
+    //             phoneNumber,
+    //             amount: paymentMode === 'Free' ? 0 : amount,
+    //             image: userEnteredData.vehicleImage.path,
+    //             remarks,
+    //             onlineTransactionId: paymentMode === 'Online' ? paymentResult.ref_id : "",
+    //             name: details.name,
+    //             createdAtClient: moment().utcOffset("+05:30").format(),
+    //             address: userEnteredData.address,
+    //             isPass: details.isPass,
+    //             ...(duration === 'All Month Pass' ? { passId: details.passId } : {})
+    //         };
+    //         console.log('apiData,,,hit ,,,,,,,,,,,,,,,', apiData);
+
+    //         const response = await fetch(`${url}/api/v1/parking-tickets/tickets`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'x-client-source': 'app',
+    //                 'userId': userId,
+    //                 'Authorization': `Bearer ${token}`,
+    //                 'client-language': appLanguage
+    //             },
+    //             body: JSON.stringify(apiData),
+    //         });
+
+    //         if (!response.ok) {
+    //             console.log('res[posmne', response);
+    //             const errorText = await response.text();
+    //             console.error('Error Response Text:', errorText);
+    //             throw new Error(`Server Error: ${response.status} ${response.statusText}`);
+    //         }
+
+    //         const data = await response.json();
+    //         console.log('Parking Tickets Data:', data);
+
+    //         if (response.status === 200) {
+    //             setShowSuccessModal(true);
+    //             dispatch({
+    //                 type: CREATE_TICKET,
+    //                 payload: { isTicketCreated: !isTicketCreated }
+    //             });
+    //             setTimeout(() => {
+    //                 setShowSuccessModal(false);
+    //                 navigation.navigate('Home')
+    //             }, 2000);
+    //         } else {
+    //             handleErrorResponse(response, data);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error from handleConfirm:', error);
+    //         toast.show(`Error from handleConfirm: ${error.message}`, { type: 'danger', placement: 'top' });
+    //     } finally {
+    //         setConfirmLoader(false)
+    //     }
+    // };
+
     return (
         <>
             <DashboardHeader headerText={t('Profile')} secondaryHeaderText={'ASSISTANT'} />
             <ScrollView contentContainerStyle={styles.container}>
-                {details.paymentMode === "Cash" && <View style={styles.headerContainer}>
+                {(details.paymentMode === "Online" && userEnteredData.type !== 'ticketDetailsPreview') && <View style={styles.headerContainer}>
                     <TouchableOpacity onPress={() => setQRModalVisible(true)} style={styles.QrContainer}>
                         <Text style={styles.QrText}>{t("Show QR")}</Text>
                     </TouchableOpacity>
@@ -347,7 +423,9 @@ const PaymentDetails = ({ navigation, route }) => {
                     editable={false}
                 />
 
-                {details.paymentMode === 'Free' && (
+                {/* I am showing a remark section on 'Online' for temporarily as client dont have a online qr
+                setup that's why I am showing it on 'Online' once the qr is setup I will show it on 'Free'. */}
+                {details.paymentMode === 'Online' && (
                     <View>
                         <Text style={styles.label}>{t("Remarks (if free)")}</Text>
                         <TextInput

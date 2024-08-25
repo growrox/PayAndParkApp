@@ -131,6 +131,7 @@
         "You are logged out successfully!": "सफलतापूर्वक लॉग आउट किया गया है!",
         "Select Vehicle Type": "वाहन प्रकार चुनें",
         "Unsettled": "निपटाएँ नहीं",
-        "Show QR": "QR दिखाएँ"
+        "Show QR": "QR दिखाएँ",
+        "Please enter a vehicle number with at least 10 characters": "कम से कम 10 वर्णों के साथ वाहन संख्या दर्ज करें"
     }
 }

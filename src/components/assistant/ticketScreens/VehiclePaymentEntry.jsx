@@ -78,11 +78,10 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     }, [])
 
     const handleSubmit = async () => {
-        if (!vehicleNumber) {
-            toast.show(t('Please enter a vehicle number'), { type: 'warning', placement: 'top' });
+        if (!vehicleNumber || vehicleNumber.replace(/\s+/g, '').length < 10) {
+            toast.show(t('Please enter a vehicle number with at least 10 characters'), { type: 'warning', placement: 'top' });
             return;
         }
-
         if (phoneNumber.length !== 10) {
             toast.show(t('Phone number cannot be less than ten digits'), { type: 'warning', placement: 'top' });
             return;
@@ -99,7 +98,11 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             toast.show(t('Please Enter a Owner name'), { type: 'warning', placement: 'top' });
             return;
         }
-        if (selectedMethod === 'Free') {
+
+        {/* I am showing a alert on 'Online' for temporarily as client dont have a online qr
+                setup that's why I am showing it on 'Online' once the qr is setup I will show it on 'Free'. */}
+
+        if (selectedMethod === 'Online') {
             if (!remarks) {
                 return toast.show(t("Please enter any remarks"), { type: 'warning', placement: 'top' });
             }
@@ -387,15 +390,6 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                     selectedTime !== 'All Month Pass' && <>
                         <Text style={styles.secondHeading}>{t("Payment Method")}</Text>
 
-                        {/* <TouchableOpacity
-                            style={styles.radioButton}
-                            onPress={() => handleSelectMethod('Online')}
-                        >
-                            <Text style={styles.radioText}>{t("Online")}</Text>
-                            <View style={styles.radioCircleOuter}>
-                                {selectedMethod === 'Online' && <View style={styles.radioCircleInner} />}
-                            </View>
-                        </TouchableOpacity> */}
 
                         <TouchableOpacity
                             style={styles.radioButton}
@@ -409,18 +403,30 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
                         <TouchableOpacity
                             style={styles.radioButton}
+                            onPress={() => handleSelectMethod('Online')}
+                        >
+                            <Text style={styles.radioText}>{t("Online")}</Text>
+                            <View style={styles.radioCircleOuter}>
+                                {selectedMethod === 'Online' && <View style={styles.radioCircleInner} />}
+                            </View>
+                        </TouchableOpacity>
+                        {/*<TouchableOpacity
+                            style={styles.radioButton}
                             onPress={() => handleSelectMethod('Free')}
                         >
                             <Text style={styles.radioText}>{t("Free")}</Text>
                             <View style={styles.radioCircleOuter}>
                                 {selectedMethod === 'Free' && <View style={styles.radioCircleInner} />}
                             </View>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </>
                 }
 
+                {/* I am showing a remark on 'Online' for temporarily as client dont have a online qr
+                setup that's why I am showing it on 'Online' once the qr is setup I will show it on 'Free'. */}
+
                 {
-                    (selectedMethod === 'Free' && selectedTime !== 'All Month Pass') && <>
+                    (selectedMethod === 'Online' && selectedTime !== 'All Month Pass') && <>
                         <Text style={styles.label}>{t("Remarks")}</Text>
                         <TextInput
                             style={styles.input}
