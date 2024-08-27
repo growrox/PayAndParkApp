@@ -3,9 +3,10 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView } from 
 
 const VehicleSearchBar = ({
     recentVehicleNumbers,
-    setVehicleSearchInput,
+    setVehicleNumber,
     selectedVechicleNumberId,
-    setSelectedVechicleNumberId
+    setSelectedVechicleNumberId,
+    vehicleNumber
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -36,15 +37,19 @@ const VehicleSearchBar = ({
                 <TextInput
                     style={{ ...styles.inputSearch, ...(!selectedVechicleNumberId ? {} : { borderBottomWidth: 0.5 }) }}
                     placeholder="Search vehicle number"
+                    placeholderTextColor="gray"
                     value={searchTerm}
                     onChangeText={(text) => {
                         console.log("searchTerm--------", text);
 
                         setSearchTerm(text);
-                        setVehicleSearchInput(text);
+                        setVehicleNumber(text);
                     }}
                 />
-                {!selectedVechicleNumberId && (
+
+                {console.log("vehicleNumber === data[0].label",vehicleNumber !== data?.[0]?.label)}
+                
+                {!selectedVechicleNumberId && vehicleNumber !== data?.[0]?.label && (
                     <ScrollView style={styles.scrollContainer}>
                         {filteredData.map(item => (
                             <TouchableOpacity

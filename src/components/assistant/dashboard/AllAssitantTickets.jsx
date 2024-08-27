@@ -120,13 +120,13 @@ export default function AllAssitantTickets({ navigation }) {
                 </View>
                 <View style={{ ...styles.ticketRow, marginTop: 10 }}>
                     <Text style={styles.ticketText}>{t("Ticket")} #0{index + 1}</Text>
-                    <Text style={styles.ticketText}>{moment(item.createdAt).format('MM/DD/YYYY h:mm')}</Text>
+                    <Text style={styles.ticketText}>{moment(item.createdAt).format('DD/MM/YY, h:mm A')}</Text>
                 </View>
                 <View style={styles.separator} />
 
                 <View style={styles.ticketRow}>
                     <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
-                    <Text style={styles.ticketText}>{`${item.amount}/${item.paymentMode}`}</Text>
+                    <Text style={styles.ticketText}>{`${item.paymentMode} / ${item.amount}`}</Text>
                 </View>
             </View>
         </TouchableOpacity>

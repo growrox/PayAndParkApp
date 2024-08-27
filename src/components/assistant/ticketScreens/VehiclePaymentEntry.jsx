@@ -66,11 +66,11 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     const [location, setLocation] = useState(false);
     const { t } = useTranslation();
     const { appLanguage, token, userId } = useSelector(state => state.auth);
-    const [vehicleSearchInput, setVehicleSearchInput] = useState('');
+    // const [vehicleNumber, setVehicleSearchInput] = useState('');
     const [recentVehicleNumbers, setRecentVehicleNumbers] = useState([]);
     const [selectedVechicleNumberId, setSelectedVechicleNumberId] = useState('');
-    const [debouncedSearchInput, setDebouncedSearchInput] = useState(vehicleSearchInput);
-    const [isNewVihicle, setIsNewVihicle] = useState(false);
+    const [debouncedSearchInput, setDebouncedSearchInput] = useState(vehicleNumber);
+    // const [isNewVihicle, setIsNewVihicle] = useState(false);
     const toast = useToast();
 
     const handleSelectMethod = (method) => {
@@ -85,7 +85,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     useEffect(() => {
         // console.log("recentVehicleNumbers", recentVehicleNumbers);
         // console.log("selectedVechicleNumberId", selectedVechicleNumberId);
-        if (selectedVechicleNumberId && recentVehicleNumbers.length > 0) {
+        if (recentVehicleNumbers.length > 0) {
             const filteredVehicleData = recentVehicleNumbers.filter(item => item._id === selectedVechicleNumberId);
             console.log("filteredVehicleData", filteredVehicleData);
             if (filteredVehicleData.length > 0) {
@@ -94,28 +94,28 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 setVehicleNumber(vehicleData.vehicleNumber)
                 setPhoneNumber(vehicleData.phoneNumber)
                 setName(vehicleData.name)
-                setIsNewVihicle(false)
+                // setIsNewVihicle(false)
             }
         }
     }, [selectedVechicleNumberId, recentVehicleNumbers]);
 
     useEffect(() => {
-        console.log("vehicleSearchInput-------------", vehicleSearchInput);
+        console.log("vehicleNumber-------------", vehicleNumber);
 
         const handler = setTimeout(() => {
-            setDebouncedSearchInput(vehicleSearchInput);
+            setDebouncedSearchInput(vehicleNumber);
         }, 1000);
 
         return () => {
             clearTimeout(handler);
         };
-    }, [vehicleSearchInput]);
+    }, [vehicleNumber]);
 
     useEffect(() => {
 
         if (debouncedSearchInput.length > 3) {
             console.log("debouncedSearchInput", debouncedSearchInput);
-            
+
             fetchRecentVehiclehNumber();
         } else if (debouncedSearchInput.length === 0) {
             setRecentVehicleNumbers([]);
@@ -124,7 +124,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
     const fetchRecentVehiclehNumber = async () => {
         try {
-            const response = await fetch(`${url}/api/v1/ticket/previous?vehicleType=${selectedVehicle}&vehicleNumber=${vehicleSearchInput}`, {
+            const response = await fetch(`${url}/api/v1/ticket/previous?vehicleType=${selectedVehicle}&vehicleNumber=${vehicleNumber}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -159,14 +159,13 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                 const messageData = data.message
                 // console.log('messageData', messageData);
                 toast.show(messageData, { type: toastType, placement: 'top' });
-                setIsNewVihicle(true)
+                // setIsNewVihicle(true)
                 // console.log('response.status data.message  data.error', response.status, data.message, data.error)
             }
         } catch (error) {
             // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
             console.log('error.message', error.message);
         } finally {
-            setVehicleNumber('')
             setSelectedVechicleNumberId('')
         }
     }
@@ -437,18 +436,21 @@ export default function VehiclePaymentEntry({ navigation, route }) {
                     {selectedTime !== 'All Month Pass' && <>
                         <VehicleSearchBar
                             recentVehicleNumbers={recentVehicleNumbers}
-                            vehicleSearchInput={vehicleSearchInput}
-                            setVehicleSearchInput={setVehicleSearchInput}
+                            vehicleNumber={vehicleNumber}
+                            setVehicleNumber={setVehicleNumber}
                             selectedVechicleNumberId={selectedVechicleNumberId}
                             setSelectedVechicleNumberId={setSelectedVechicleNumberId}
                         />
-                        {isNewVihicle ? <TextInput
-                            style={styles.input}
-                            value={vehicleNumber}
-                            placeholder={t('Enter Vehicle Number')}
-                            placeholderTextColor={'grey'}
-                            onChangeText={setVehicleNumber}
-                        /> : <></>}
+
+                        {/* <>
+                            {isNewVihicle ? <TextInput
+                                style={styles.input}
+                                value={vehicleNumber}
+                                placeholder={t('Enter Vehicle Number')}
+                                placeholderTextColor={'grey'}
+                                onChangeText={setVehicleNumber}
+                            /> : <></>}
+                        </> */}
 
                         <TextInput
                             style={styles.input}

@@ -452,7 +452,7 @@ export default function Home({ navigation }) {
                       <View style={styles.separator} />
                       <View style={styles.ticketRow}>
                         <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
-                        <Text style={styles.ticketText}>{`${item.amount}/${item.paymentMode}`}</Text>
+                        <Text style={styles.ticketText}>{`${item.paymentMode} / ${item.amount}`}</Text>
                       </View>
                     </View>
                   </TouchableOpacity>
