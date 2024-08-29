@@ -392,8 +392,8 @@ export default function Home({ navigation }) {
                   <Text style={styles.cardTitle}>{da.vehicleType}</Text>
                   <Text style={styles.cardAmount}>{da.TicketCount}</Text>
                 </View>)
-                ) : <Text style={{ textAlign: 'center', color: '#fff',fontSize: 16 }}>{t("No tickets to show")}!</Text>
-              }
+                ) : <Text style={{ textAlign: 'center', color: '#fff', fontSize: 16 }}>{t("No tickets to show")}!</Text>
+                }
               </>}
 
             </View>
@@ -411,6 +411,7 @@ export default function Home({ navigation }) {
               </View>
             </View>
           </View>
+
 
           <TouchableOpacity disabled={isCreateTicket} onPress={handleCreateTicket} style={styles.button}>
             {isCreateTicket ? (

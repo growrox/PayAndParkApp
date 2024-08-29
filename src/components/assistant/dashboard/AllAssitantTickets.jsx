@@ -28,7 +28,8 @@ export default function AllAssitantTickets({ navigation }) {
     const fetchAllTickets = async (page) => {
         try {
             let pageSize = 10;
-            const response = await fetch(`${url}/api/v1/parking-assistant/tickets?page=${page}&pageSize=${pageSize}&searchQuery=${searchQuery}`, {
+            const finalURL = `${url}/api/v1/parking-assistant${searchQuery ? "/global/tickets" : "/tickets"}?page=${page}&pageSize=${pageSize}&searchQuery=${searchQuery}`
+            const response = await fetch(finalURL, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -86,10 +87,10 @@ export default function AllAssitantTickets({ navigation }) {
     };
 
     const handleSubmitSearch = async () => {
-        if (searchQuery.length < 1) {
-            toast.show(t('Please enter any keyword to search'), { type: 'warning', placement: 'top' });
-            return;
-        }
+        // if (searchQuery.length < 1) {
+        //     toast.show(t('Please enter any keyword to search'), { type: 'warning', placement: 'top' });
+        //     return;
+        // }
         setLoading(true);
         setPageNumber(1);
         fetchAllTickets(1);

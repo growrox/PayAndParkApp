@@ -1,14 +1,44 @@
 import * as React from 'react';
-import { Text, View, TouchableWithoutFeedback, StyleSheet, Image, Modal, TouchableOpacity } from 'react-native';
+import { Text, View, TouchableWithoutFeedback, StyleSheet, Image, Modal, PermissionsAndroid } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import ProfileModal from './profile/ProfileModal';
 import { useNavigation } from '@react-navigation/native';
+import Geolocation from 'react-native-geolocation-service';
 
+
+const requestLocationPermission = async () => {
+    try {
+        const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+                title: 'Geolocation Permission',
+                message: 'Please allow to access your location.',
+                //   buttonNeutral: 'Ask Me Later',
+                buttonNegative: 'Cancel',
+                buttonPositive: 'OK',
+            },
+        );
+        // console.log('granted', granted);
+        if (granted === 'granted') {
+            console.log('You can use Geolocation');
+            return true;
+        } else {
+            console.log('You cannot use Geolocation');
+            return false;
+        }
+    } catch (err) {
+        return false;
+    }
+};
 export default function DashboardHeader({ headerText, secondaryHeaderText }) {
     const navigation = useNavigation()
     const [modalVisible, setModalVisible] = React.useState(false);
     const { isClockedIn } = useSelector(state => state.auth)
+    const [location, setLocation] = React.useState(false);
 
+    React.useEffect(() => {
+        getLocation()
+    }, [])
 
     const handleLogoPress = () => {
         navigation.navigate('Home');
@@ -17,6 +47,28 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
     const handleProfilePress = () => {
         // console.log('Profile pressed');
         setModalVisible(true);
+    };
+
+    const getLocation = () => {
+        const result = requestLocationPermission();
+        result.then(res => {
+            // console.log('res is:', res);
+            if (res) {
+                Geolocation.getCurrentPosition(
+                    position => {
+                        // console.log('position', position);
+                        setLocation(position);
+                    },
+                    error => {
+                        // See error code charts below.
+                        console.log(error.code, error.message);
+                        setLocation(false);
+                    },
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+                );
+            }
+        });
+        // console.log(location);
     };
 
     return (
@@ -38,7 +90,7 @@ export default function DashboardHeader({ headerText, secondaryHeaderText }) {
                 </View>
             </TouchableWithoutFeedback>
 
-            <ProfileModal secondaryHeaderText={secondaryHeaderText} headerText={headerText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+            <ProfileModal location={location} secondaryHeaderText={secondaryHeaderText} headerText={headerText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
         </View>
     );
 }

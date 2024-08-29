@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
-const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHeaderText }) => {
+const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHeaderText, location }) => {
     const { isClockedIn, userId, token, phoneNo, name, shiftDetails, role, code, appLanguage } = useSelector(state => state.auth)
     const [isLoading, setLoading] = React.useState(false)
     const toast = useToast();
@@ -41,7 +41,9 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
     const handleClockin = async () => {
         setLoading(true)
         try {
-            const response = await fetch(`${url}/api/v1/attendance/clock-in/${userId}`, {
+            console.log("location on clockin", location?.coords?.latitude, location?.coords?.longitude);
+            // return
+            const response = await fetch(`${url}/api/v1/attendance/clock-in/${userId}?latitude=${location?.coords?.latitude}&longitude=${location?.coords?.longitude}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -98,8 +100,10 @@ const ProfileModal = ({ modalVisible, setModalVisible, headerText, secondaryHead
         setLoading(true)
 
         try {
+            console.log("location on clockout", location?.coords?.latitude, location?.coords?.longitude);
+            // return
 
-            const response = await fetch(`${url}/api/v1/attendance/clock-out/${userId}`, {
+            const response = await fetch(`${url}/api/v1/attendance/clock-out/${userId}?latitude=${location?.coords?.latitude}&longitude=${location?.coords?.longitude}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -31,6 +31,7 @@ export default function SupervisorPage({ navigation, route }) {
     const [isFetchingMore, setFetchingMore] = useState(false);
     const [pageNumber, setPageNumber] = useState(1);
     const [isOpen, setOpen] = useState(false)
+    const [cashComponents, setCashComponents] = useState()
 
 
     const [parkingAssistants, setParkingAssistant] = useState([])
@@ -41,9 +42,9 @@ export default function SupervisorPage({ navigation, route }) {
 
     }, [])
 
-    useEffect(() => {
-        fetchParkingAssistants(pageNumber)
-    }, [pageNumber])
+    // useEffect(() => {
+    //     fetchParkingAssistants(pageNumber)
+    // }, [pageNumber])
 
 
     const fetchSupervisorStats = async () => {
@@ -70,6 +71,7 @@ export default function SupervisorPage({ navigation, route }) {
                     totalCollection: data.result.TotalCollection,
                     totalPayable: data.result.TotalCollectedAmount
                 })
+                setCashComponents(data.result.CashComponents)
             } else if (response.status === 401 || response.status === 406) {
                 dispatch({
                     type: AUTH_LOG_OUT,
@@ -314,7 +316,7 @@ export default function SupervisorPage({ navigation, route }) {
                             <Text style={styles.buttonText}>{t("Settle Amount")}</Text>
                         </TouchableOpacity>
 
-                        {isLoadingAssistData ? (
+                        {/* {isLoadingAssistData ? (
                             <Spinner topMargin={150} />
                         ) : (
 
@@ -332,7 +334,7 @@ export default function SupervisorPage({ navigation, route }) {
                                 />}
                             </View>
 
-                        )}
+                        )} */}
 
                     </View>
                 </View>
@@ -341,7 +343,8 @@ export default function SupervisorPage({ navigation, route }) {
                 isVisible={isOpen}
                 handleSettleAmount={handleSettleAmount}
                 handleClose={toggleModal}
-                settlementAmount={supervisorStats.totalPayable}
+                cashComponents={cashComponents}
+                totalCollected={supervisorStats?.totalPayable}
             />
         </View>
     );
