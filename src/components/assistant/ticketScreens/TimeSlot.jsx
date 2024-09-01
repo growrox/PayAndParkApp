@@ -4,7 +4,7 @@ import DashboardHeader from '../../DashboardHeader';
 import { useTranslation } from 'react-i18next';
 
 export default function TimeSlot({ navigation, route }) {
-    const { selectedVehicle } = route.params;
+    const { selectedVehicle, vehicleName } = route.params;
     const { t } = useTranslation();
 
     const handleCardPress = (slot, amount) => {
@@ -24,27 +24,31 @@ export default function TimeSlot({ navigation, route }) {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.subHeader}>
                     <Text style={styles.subHeaderText}>{t("Select Time Slot")}</Text>
+                    <Text style={styles.subdiscText}>{t("Vehicle Type")}: {vehicleName}</Text>
                 </View>
 
                 <View style={styles.cardContainer}>
                     {selectedVehicle.hourlyPrices.map((_d, i) => {
                         return (
-                            <TouchableOpacity
-                                key={_d._id}
-                                style={styles.collectionCard}
-                                onPress={() => handleCardPress(_d.hour, _d.price)}
-                            >
-                                <Text style={styles.cardTitle}>{_d.hour} {t("Hours")}</Text>
-                                <Text style={styles.cardTitle}>{_d.price} {t("Rs")}</Text>
-                            </TouchableOpacity>
+                            <React.Fragment key={_d._id}>
+                                {_d.hour == 720 ?
+                                    <TouchableOpacity
+                                        style={{ ...styles.collectionCard, justifyContent: 'center' }}
+                                        onPress={() => handleCardPress(_d.hour, _d.price)}
+                                    >
+                                        <Text style={styles.cardTitle}>{t("All Month Pass")}</Text>
+                                    </TouchableOpacity> :
+                                    <TouchableOpacity
+                                        style={styles.collectionCard}
+                                        onPress={() => handleCardPress(_d.hour, _d.price)}
+                                    >
+                                        <Text style={styles.cardTitle}>{_d.hour} {t("Hours")}</Text>
+                                        <Text style={styles.cardTitle}>{_d.price} {t("Rs")}</Text>
+                                    </TouchableOpacity>}
+                            </React.Fragment>
                         )
                     })}
-                    {/* <TouchableOpacity
-                        style={{ ...styles.collectionCard, justifyContent: 'center' }}
-                        onPress={() => handleCardPress('All Month Pass', 0)}
-                    >
-                        <Text style={styles.cardTitle}>{t("All Month Pass")}</Text>
-                    </TouchableOpacity> */}
+
 
                 </View>
             </ScrollView>
@@ -69,6 +73,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         color: '#000',
+    },
+    subdiscText: {
+        fontSize: 12,
+        color: '#000',
+        textAlign: 'center',
+        fontWeight: '500',
+        marginTop: 5
     },
     cardContainer: {
         marginBottom: 16,

@@ -249,7 +249,7 @@ export default function AssistantPage({ navigation, route }) {
 
   const handleUpdateCash = () => {
     if (+assistantPageStats.totalPayable <= 0) return toast.show(t("Total payable amount should be greater than 0"), { type: 'warning', placement: 'top' });
-      setModalVisible(true)
+    setModalVisible(true)
   }
 
 
@@ -301,12 +301,12 @@ export default function AssistantPage({ navigation, route }) {
               </View>}
               <View style={styles.separator} />
               <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>{t("Total Payable")}</Text>
-                <Text style={styles.cardAmount}>{assistantPageStats.totalPayable - assistantPageStats.finePaid} {t("Rs")}</Text>
-              </View>
-              <View style={styles.cardRow}>
                 <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
                 <Text style={styles.cardAmount}>{assistantPageStats.totalCollection} {t("Rs")}</Text>
+              </View>
+              <View style={styles.cardRow}>
+                <Text style={styles.cardTitle}>{t("Total Payable")}</Text>
+                <Text style={styles.cardAmount}>{assistantPageStats.totalPayable - assistantPageStats.finePaid} {t("Rs")}</Text>
               </View>
             </View>
             <View style={styles.customCheckboxContainer}>

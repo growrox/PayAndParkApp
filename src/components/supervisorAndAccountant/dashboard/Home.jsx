@@ -6,9 +6,21 @@ import { useToast } from 'react-native-toast-notifications';
 import { url } from '../../../utils/url';
 import { Spinner } from '../../../utils/Spinner';
 import { AUTH_LOG_OUT } from '../../../redux/types';
-import FilterModal from './FilterModal';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
+import SearchableTicketList from '../../assistant/dashboard/components/SearchableTicketList';
+
+function isTicketExpired(expiryDate) {
+  if (!expiryDate) {
+    return true
+  }
+  const ticketExpiry = new Date(expiryDate);
+  // console.log("ticketExpiry", ticketExpiry);
+  const now = new Date();
+  // console.log("now", now);
+  // console.log("now > ticketExpiry;", now > ticketExpiry);
+  return now > ticketExpiry;
+}
 
 export default function Home({ navigation }) {
   const { token, userId, isTicketSuperVisorSettled, role, appLanguage } = useSelector(state => state.auth);
@@ -16,7 +28,6 @@ export default function Home({ navigation }) {
   const toast = useToast();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusQuery, setStatusQuery] = useState('');
   const [homePageStats, setHomePageStats] = useState({
     cashCollection: '0',
     rewardPaid: '0',
@@ -29,15 +40,16 @@ export default function Home({ navigation }) {
   const [isNoData, setNoData] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [isLoadingAssistData, setLoadingAssistData] = useState(true)
-  const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const [supOrAccData, setSupOrAccData] = useState([])
-  const [selectedShiftFilter, setSelectedShiftFilter] = useState('');
-  const [shiftFilters, setShiftFilters] = useState([])
   const searchTimer = useRef(null);
-
-  const toggleFilterModal = () => {
-    setFilterModalVisible(!isFilterModalVisible);
-  };
+  const [isTotalCollectionView, setTotalCollectionView] = React.useState(false);
+  const [isTotalAssistantView, setTotalAssistantView] = React.useState(false);
+  const [superVisorLifeTimeStats, setSuperVisorLifeTimeStats] = React.useState({
+    totalCollection: 0,
+    cashCollection: '',
+    onlineCollection: '',
+    reward: '',
+  })
 
   useEffect(() => {
     fetchHomeStats()
@@ -45,8 +57,7 @@ export default function Home({ navigation }) {
 
   useEffect(() => {
     if (role === 'supervisor') {
-      fetchFilters()
-      fetchParkingAssistants()
+      fetchSuperVisorLifeTimeStats()
     } else {
       fetchSuperVisors(pageNumber)
     }
@@ -60,10 +71,8 @@ export default function Home({ navigation }) {
     };
 
     debounce(() => {
-      if (role === 'supervisor') {
+      if (role === 'accountant') {
 
-        fetchParkingAssistants();
-      } else {
         fetchSuperVisors(1)
       }
     }, 500);
@@ -74,7 +83,7 @@ export default function Home({ navigation }) {
   const fetchHomeStats = async () => {
     try {
       // console.log("ssssURL",`${url}/api/v1/${role === 'accountant' ? "accountant" : "supervisor"}/stats/${userId}`);
-      
+
       const response = await fetch(`${url}/api/v1/${role === 'accountant' ? "accountant" : "supervisor"}/stats/${userId}`, {
         method: 'GET',
         headers: {
@@ -131,60 +140,6 @@ export default function Home({ navigation }) {
       // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
       console.log('error.message', error.message);
       setLoading(false);
-    }
-  }
-
-
-  const fetchParkingAssistants = async () => {
-    try {
-      let queryParams = '';
-
-      if (searchQuery) {
-        queryParams = searchQuery;
-      } else if (statusQuery) {
-        queryParams = statusQuery;
-      }
-      const apiUrl = `${url}/api/v1/supervisor/parkings-assistants/${userId}?queryParam=${queryParams}&shiftID=${selectedShiftFilter}`;
-      // console.log("apiUrl", apiUrl);
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-client-source': 'app',
-          'userId': userId,
-          'Authorization': `Bearer ${token}`,
-          'client-language': appLanguage
-        },
-      });
-
-      const data = await response.json();
-      // console.log('fetchParkingAssistants data', data?.result?.assistants);
-      if (response.status === 200) {
-        setSupOrAccData(data?.result?.assistants || [])
-      } else if (response.status === 401 || response.status === 406) {
-        dispatch({
-          type: AUTH_LOG_OUT,
-          payload: {
-            token: "",
-            location: "",
-            role: "",
-            phoneNo: "",
-            userId: "",
-            name: ""
-          }
-        });
-      } else {
-        const toastType = response.status >= 400 ? 'danger' : 'warning';
-        const messageData = response.status >= 400 ? data.error : data.message
-        // console.log('messageData', messageData);
-        toast.show(messageData, { type: toastType, placement: 'top' });
-        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
-      }
-      setLoadingAssistData(false);
-    } catch (error) {
-      // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
-      console.log('error.message', error.message);
-      setLoadingAssistData(false);
     }
   }
 
@@ -248,91 +203,16 @@ export default function Home({ navigation }) {
     }
   }
 
-  const fetchFilters = async () => {
-    try {
-      const response = await fetch(`${url}/api/v1/shifts/list`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-client-source': 'app',
-          'Authorization': `Bearer ${token}`,
-          'client-language': appLanguage,
-          'userId': userId
-        },
-      });
-
-      const data = await response.json();
-      // console.log('response.status data.message  data.error', response.status, data.message, data.error)
-      if (response.status === 200) {
-        setShiftFilters(data.result)
-      } else if (response.status === 401 || response.status === 406) {
-        dispatch({
-          type: AUTH_LOG_OUT,
-          payload: {
-            token: "",
-            location: "",
-            role: "",
-            phoneNo: "",
-            userId: "",
-            name: ""
-          }
-        });
-      } else {
-        const toastType = response.status >= 400 ? 'danger' : 'warning';
-        const messageData = response.status >= 400 ? data.error : data.message
-        // console.log('messageData', messageData);
-        toast.show(messageData, { type: toastType, placement: 'top' });
-        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
-      }
-    } catch (error) {
-      // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
-      console.log('error.message', error.message);
-    }
-  }
 
   const onCardClick = (item) => {
     // console.log("onCardClick item", item);
     if (role === 'accountant') {
       navigation.navigate('SupervisorPage', { supervisorData: item })
 
-    } else {
-      navigation.navigate('AssistantPage', { assistantData: item })
     }
   }
 
   const renderTicket = ({ item, index }) => (
-    <TouchableWithoutFeedback key={item._id} onPress={() => onCardClick(item)}>
-      <View style={{ paddingRight: 4, paddingLeft: 4 }}>
-        <View style={styles.userCard}>
-          <View style={styles.topRow}>
-            <Image
-              source={item.isOnline ? require('../../../utils/images/homeSupervisor/userGreen.png') :
-                require('../../../utils/images/homeSupervisor/userRed.png')}
-              style={styles.avatar}
-            />
-            <Text style={styles.userName}>{item?.name}</Text>
-            <View style={styles.amountSection}>
-              <Image
-                source={require('../../../utils/images/homeSupervisor/money.png')}
-                style={styles.moneyIcon}
-              />
-              <Text style={styles.amount}>{item.amountToCollect}</Text>
-            </View>
-          </View>
-          <View style={styles.bottomRow}>
-            <View style={styles.lastCollectionContainer}>
-              <Text style={styles.lastCollection}>
-                {t("Last Collection")} - {item.lastSettled ? moment(item.lastSettled).format('DD-MMM-yyy') : 'No settlement yet'}
-              </Text>
-            </View>
-            <Text style={styles.shift}>{item?.shiftDetails?.name}</Text>
-          </View>
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
-  );
-
-  const renderTicket2 = ({ item, index }) => (
     <TouchableWithoutFeedback key={item._id} onPress={() => onCardClick(item)}>
       <View style={{ paddingRight: 4, paddingLeft: 4 }}>
         <View style={styles.userCard}>
@@ -372,17 +252,66 @@ export default function Home({ navigation }) {
     </TouchableWithoutFeedback>
   )
 
+  const fetchSuperVisorLifeTimeStats = async () => {
+
+    try {
+      const response = await fetch(`${url}/api/v1/supervisor/lifetime-stats/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': `${userId}`,
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
+        },
+
+      });
+
+      const data = await response.json();
+      // console.log('data.result fetchSuperVisorLifeTimeStats.......', data.result);
+
+      if (response.status === 200) {
+        const { totalCollection, totalReward, totalCashCollection, onlineCollection } = data.result
+        setSuperVisorLifeTimeStats({
+          totalCollection: totalCollection || 0,
+          cashCollection: totalCashCollection || 0,
+          onlineCollection: onlineCollection || 0,
+          reward: totalReward,
+        })
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            role: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+      }
+
+    } catch (error) {
+      console.log('Error occurred while parking-assistant/stats', error);
+      toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setLoading(false)
+      // console.log('trigger falsae');
+    }
+  }
+
   const handleSearch = (text) => {
     setSearchQuery(text)
     setPageNumber(1);
     setNoData(false)
   }
 
-  const handleApplyFilters = () => {
-    toggleFilterModal();
-    fetchParkingAssistants()
-    setLoadingAssistData(true)
-  };
 
   const loadMoreSupervisors = () => {
     // console.log("hit loadMoreSupervisors");
@@ -391,6 +320,33 @@ export default function Home({ navigation }) {
     setFetchingMore(true);
     setPageNumber(prevPage => prevPage + 1);
   };
+
+  const renderTicket2 = ({ item, index }) => (
+    <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
+      <View key={item._id} style={styles.ticket}>
+        <View style={{ ...styles.settledBadge, ...(item?.status === 'settled' ? { backgroundColor: '#2ecc71' } : { backgroundColor: "#e74c3c" }) }}>
+          <Text style={{ color: '#ffffff' }}>{item?.status === 'settled' ? t("Settled") : t("Unsettled")}</Text>
+        </View>
+        <View style={{ ...styles.expiredBadge, backgroundColor: "orange" }}>
+          <Text style={{ color: '#ffffff' }}>{item.isPass ? t("Pass") : t("Ticket")}</Text>
+        </View>
+        <View style={{ ...styles.ticketRow, marginTop: 10 }}>
+          <Text style={styles.ticketText}>{t("Ticket")}: PNP24-0830-000{index + 1}</Text>
+          <Text style={{ ...styles.ticketText, color: isTicketExpired(item?.ticketExpiry) ? 'red' : '#000' }}>
+            {isTicketExpired(item?.ticketExpiry) ?
+              t("Expired") :
+              moment.utc(item.createdAt).local().format('DD/MM/YY, h:mm A')
+            }
+          </Text>
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.ticketRow}>
+          <Text style={styles.ticketText}>{t("Veh No")}: {String(item.vehicleNumber).toLocaleUpperCase()}</Text>
+          <Text style={styles.ticketText}>{`${item.paymentMode} / ${item.amount}`}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -401,6 +357,26 @@ export default function Home({ navigation }) {
         <View style={styles.scrollContainer}>
           <View style={styles.cardContainer}>
             <View style={styles.collectionCard}>
+              {role === 'supervisor' && (
+                <>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Todays Collection")}</Text>
+                    <Text style={styles.cardAmount}>{homePageStats.cashCollection} {t("Rs")}</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
+                    <Text style={styles.cardAmount}>{homePageStats.cashCollection} {t("Rs")}</Text>
+                  </View>
+                </>
+              )}
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/rupee.png')}
@@ -433,12 +409,141 @@ export default function Home({ navigation }) {
                 </View>
               </>}
             </View>
+
+            {role === "supervisor" &&
+              <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
+                <TouchableOpacity onPress={() => setTotalAssistantView((prev) => !prev)} >
+                  <View style={{ ...styles.cardRow, position: 'relative' }}>
+                    <Image
+                      source={require('../../../utils/images/homeSupervisor/group.png')}
+                      style={{ ...styles.cardIcon, marginRight: 10 }}
+                    />
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={styles.cardTitle}>{t("Total Assistant")}</Text>
+                      <View>
+
+                        <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{superVisorLifeTimeStats.totalCollection} RS</Text>
+                        <Image
+                          source={require('../../../utils/images/homeAssistant/bottom-arrow.png')}
+                          style={{
+                            position: 'absolute',
+                            width: 20,
+                            height: 20,
+                            right: -5,
+                            top: 1,
+                            transform: [
+                              {
+                                rotate: isTotalAssistantView ? '180deg' : '0deg'
+                              }
+                            ]
+                          }}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                {isTotalAssistantView && <>
+                  <View style={{ ...styles.separator, marginBottom: 10 }} />
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Total Online Assistant")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.cashCollection} RS</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/credit-card.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Total Offline Assistant")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.onlineCollection} RS</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Reward")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.reward} RS</Text>
+                  </View>
+                </>}
+              </View>
+            }
+
+            {role === "supervisor" &&
+              <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
+                <TouchableOpacity onPress={() => setTotalCollectionView((prev) => !prev)} >
+                  <View style={{ ...styles.cardRow, position: 'relative' }}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/cashCollection2.png')}
+                      style={{ ...styles.cardIcon, marginRight: 10 }}
+                    />
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
+                      <View>
+
+                        <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{superVisorLifeTimeStats.totalCollection} RS</Text>
+                        <Image
+                          source={require('../../../utils/images/homeAssistant/bottom-arrow.png')}
+                          style={{
+                            position: 'absolute',
+                            width: 20,
+                            height: 20,
+                            right: -5,
+                            top: 1,
+                            transform: [
+                              {
+                                rotate: isTotalCollectionView ? '180deg' : '0deg'
+                              }
+                            ]
+                          }}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                {isTotalCollectionView && <>
+                  <View style={{ ...styles.separator, marginBottom: 10 }} />
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.cashCollection} RS</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/credit-card.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.onlineCollection} RS</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Reward")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.reward} RS</Text>
+                  </View>
+                </>}
+              </View>
+            }
+
+            {role === 'supervisor' && <TouchableOpacity onPress={() => navigation.navigate('AllParkingAssistant')} style={styles.ViewAllAssistantbutton}>
+              <Text style={styles.buttonText}>{t("View All Parking Assistants")}</Text>
+            </TouchableOpacity>}
+
             {role === 'accountant' && <TouchableOpacity style={{ ...styles.button }} onPress={() => navigation.navigate('SettledTickets')}>
               <Text style={styles.buttonText}>{t("Your Settled Tickets")}</Text>
             </TouchableOpacity>}
-            <View style={styles.searchContainerChild}>
+            {role === 'accountant' ? <View style={styles.searchContainerChild}>
               <Image
-                source={require('../../../utils/images/search.png')}
+                source={require('../../../utils/images/search.png')} 
                 style={styles.searchLogo}
               />
               <TextInput
@@ -448,47 +553,54 @@ export default function Home({ navigation }) {
                 value={searchQuery}
                 onChangeText={handleSearch}
               />
-              {role === 'supervisor' && <TouchableOpacity style={styles.filterIconContainer} onPress={toggleFilterModal}>
+              {/* {role === 'supervisor' && <TouchableOpacity style={styles.filterIconContainer} onPress={toggleFilterModal}>
                 <Image
                   source={require('../../../utils/images/homeSupervisor/filter.png')}
                   style={styles.filterIcon}
                 />
-              </TouchableOpacity>}
-            </View>
+              </TouchableOpacity>} */}
+            </View> : <></>}
 
-            {isLoadingAssistData ? (
-              <Spinner topMargin={150} />
-            ) : (
+            {role === 'supervisor' ? <View style={{ margin: -14, marginTop: 6 }}>
+              <SearchableTicketList
+                endpoint={`${url}/api/v1/parking-assistant/tickets`}
+                navigation={navigation}
+                renderItem={renderTicket2}
+                headerText={t('Profile')}
+                noDataText={t("No ticket created yet")}
+                searchPlaceholder={t("Search")}
+                clearButtonText={t("Clear")}
 
-              <View style={{ marginTop: 5 }}>
-                {supOrAccData?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={styles.phone}>{t("No Assistant Found")}!</Text>
-                </View> : <FlatList
-                  data={supOrAccData}
-                  renderItem={role === "accountant" ? renderTicket2 : renderTicket}
-                  keyExtractor={(item) => item._id}
-                  onEndReached={loadMoreSupervisors}
-                  onEndReachedThreshold={role === 'accountant' ? 0.5 : null}
-                  ListFooterComponent={(isFetchingMore && role === 'accountant') && <Spinner size={30} bottomMargin={10} />}
-                  contentContainerStyle={styles.flatListContent}
-                />}
-              </View>
+              />
+            </View> :
 
-            )}
+              <>
+                {isLoadingAssistData ? (
+                  <Spinner topMargin={150} />
+                ) : (
+
+                  <View style={{ marginTop: 5 }}>
+                    {supOrAccData?.length < 1 ? <View style={{ borderWidth: 0.4, padding: 8, marginRight: 20, marginLeft: 20, marginTop: 0, borderColor: '#D0D0D0', justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={styles.phone}>{t("No Assistant Found")}!</Text>
+                    </View> : <FlatList
+                      data={supOrAccData}
+                      renderItem={renderTicket}
+                      keyExtractor={(item) => item._id}
+                      onEndReached={loadMoreSupervisors}
+                      onEndReachedThreshold={0.5}
+                      ListFooterComponent={(isFetchingMore && role === 'accountant') && <Spinner size={30} bottomMargin={10} />}
+                      contentContainerStyle={styles.flatListContent}
+                    />}
+                  </View>
+
+                )}
+
+              </>
+            }
 
           </View>
         </View>
       )}
-      <FilterModal
-        isVisible={isFilterModalVisible}
-        onClose={toggleFilterModal}
-        handleApplyFilters={handleApplyFilters}
-        selectedShiftFilter={selectedShiftFilter}
-        setSelectedShiftFilter={setSelectedShiftFilter}
-        shiftFilters={shiftFilters}
-        statusQuery={statusQuery}
-        setStatusQuery={setStatusQuery}
-      />
     </View>
   );
 }
@@ -665,5 +777,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold'
-  }
+  },
+  ViewAllAssistantbutton: {
+    backgroundColor: '#416DEC',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
 });

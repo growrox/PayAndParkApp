@@ -254,7 +254,7 @@ const PaymentDetails = ({ navigation, route }) => {
             });
 
             if (!response.ok) {
-                console.log('res[posmne', response);
+                // console.log('res[posmne', response);
                 const errorText = await response.text();
                 console.error('Error Response Text:', errorText);
                 throw new Error(`Server Error: ${response.status} ${response.statusText}`);

@@ -9,9 +9,9 @@ export default function VehicleType({ navigation, route }) {
 
     const { vehicleTypes } = route.params;
 
-    const handleCardPress = (data) => {
+    const handleCardPress = (data, name) => {
         // console.log(`Selected vehicle type: ${data}`);
-        navigation.navigate('TimeSlot', { selectedVehicle: data })
+        navigation.navigate('TimeSlot', { selectedVehicle: data, vehicleName: name })
     };
 
     return (
@@ -32,7 +32,7 @@ export default function VehicleType({ navigation, route }) {
                             <TouchableOpacity
                                 key={_d._id}
                                 style={styles.collectionCard}
-                                onPress={() => handleCardPress(_d)}
+                                onPress={() => handleCardPress(_d, _d.name)}
                             >
                                 <Image
                                     src={_d.image}

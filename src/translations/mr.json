@@ -133,6 +133,11 @@
         "Unsettled": "निपटालेले नाही",
         "Show QR": "QR दाखवा",
         "Please enter a vehicle number with no more than 10 characters": "कृपया 10 अक्षांशाचे वाहन नंबर टाका",
-        "No tickets to show": "कोणत्याही टिकट दाखविले नाही"
+        "No tickets to show": "कोणत्याही टिकट दाखविले नाही",
+        "Clear": "रिक्त",
+        "Expired": "अस्वीकृत",
+        "Veh No": "वाहन नंबर",
+        "Vehicle Type": "वाहन प्रकार",
+        "Pass": "पास"
     }
 }

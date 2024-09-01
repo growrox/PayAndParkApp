@@ -13,7 +13,7 @@ import { Picker } from '@react-native-picker/picker';
 
 
 export default function Home({ navigation }) {
-  const { token, userId, isTicketCreated, isClockedIn, appLanguage } = useSelector(state => state.auth)
+  const { token, userId, isTicketCreated, isClockedIn, appLanguage, shiftDetails } = useSelector(state => state.auth)
   const dispatch = useDispatch()
   const toast = useToast()
   const [assistantStats, setAssistantStats] = React.useState({
@@ -25,11 +25,20 @@ export default function Home({ navigation }) {
     totalTickets: '',
     vehicleTypes: []
   })
+  const [assistantLifeTimeStats, setAssistantLifeTimeStats] = React.useState({
+    totalCollection: 0,
+    cashCollection: '',
+    onlineCollection: '',
+    reward: '',
+  })
   const [isLoading, setLoading] = React.useState(true)
   const [isCreateTicket, setCreateTicket] = React.useState(false)
   const [recentTickets, setRecentTickets] = React.useState([]);
+  const [siteName, setSiteName] = React.useState('');
   const { t } = useTranslation();
   const [isVehicleTypeView, setVehicleTypeView] = React.useState(false);
+  const [isTotalCollectionView, setTotalCollectionView] = React.useState(false);
+
 
 
   const requestCameraPermission = async () => {
@@ -62,8 +71,9 @@ export default function Home({ navigation }) {
 
   React.useEffect(() => {
     fetchAssistantStats()
+    fetchAssistantLifeTimeStats()
     fetchUserClockDetails()
-    fetchRecentTickets()
+    // fetchRecentTickets()
   }, [isTicketCreated])
 
   const handleCreateTicket = async () => {
@@ -179,6 +189,61 @@ export default function Home({ navigation }) {
     }
   }
 
+  const fetchAssistantLifeTimeStats = async () => {
+
+    try {
+      const response = await fetch(`${url}/api/v1/parking-assistant/lifetime-stats`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': `${userId}`,
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
+        },
+
+      });
+
+      const data = await response.json();
+      // console.log('data.result.VehicleTypes.......', data.result.VehicleTypes);
+      console.log('data.result.......', data.result);
+
+      if (response.status === 200) {
+        const { totalCollection, totalReward, totalCashCollection, onlineCollection } = data.result
+        setAssistantLifeTimeStats({
+          totalCollection: totalCollection || 0,
+          cashCollection: totalCashCollection || 0,
+          onlineCollection: onlineCollection || 0,
+          reward: totalReward,
+        })
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            role: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+      }
+
+    } catch (error) {
+      console.log('Error occurred while parking-assistant/stats', error);
+      toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setLoading(false)
+      // console.log('trigger falsae');
+    }
+  }
+
   const fetchUserClockDetails = async () => {
 
     console.log('userId.......fetchUserClockDetails..............', userId);
@@ -202,6 +267,7 @@ export default function Home({ navigation }) {
         const { isOnline, shiftId } = data.result
         console.log('isOnline.........', isOnline);
         console.log("shiftId", shiftId);
+        setSiteName(data?.result?.siteId?.name || 'NA')
         dispatch({
           type: ASSISTANT_CLOCK,
           payload: {
@@ -233,60 +299,73 @@ export default function Home({ navigation }) {
     }
   }
 
-  const fetchRecentTickets = async () => {
-    try {
-      const response = await fetch(`${url}/api/v1/parking-assistant/tickets`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-client-source': 'app',
-          'userId': userId,
-          'Authorization': `Bearer ${token}`,
-          'page': 'home',
-          'client-language': appLanguage
-        },
-      });
+  // const fetchRecentTickets = async () => {
+  //   try {
+  //     const response = await fetch(`${url}/api/v1/parking-assistant/tickets`, {
+  //       method: 'GET',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'x-client-source': 'app',
+  //         'userId': userId,
+  //         'Authorization': `Bearer ${token}`,
+  //         'page': 'home',
+  //         'client-language': appLanguage
+  //       },
+  //     });
 
-      const data = await response.json();
-      // console.log('fetchRecentTickets data', data.result.data);
-      if (response.status === 200) {
-        setRecentTickets(data?.result?.data || []);
-      } else if (response.status === 401 || response.status === 406) {
-        dispatch({
-          type: AUTH_LOG_OUT,
-          payload: {
-            token: "",
-            location: "",
-            role: "",
-            phoneNo: "",
-            userId: "",
-            name: ""
-          }
-        });
-      } else {
-        const toastType = response.status >= 400 ? 'danger' : 'warning';
-        const messageData = response.status >= 400 ? data.error : data.message
-        // console.log('messageData', messageData);
-        toast.show(messageData, { type: toastType, placement: 'top' });
-        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
-      }
-      setLoading(false);
-    } catch (error) {
-      // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
-      console.log('error.message', error.message);
-      setLoading(false);
-    }
-  }
+  //     const data = await response.json();
+  //     // console.log('fetchRecentTickets data', data.result.data);
+  //     if (response.status === 200) {
+  //       setRecentTickets(data?.result?.data || []);
+  //     } else if (response.status === 401 || response.status === 406) {
+  //       dispatch({
+  //         type: AUTH_LOG_OUT,
+  //         payload: {
+  //           token: "",
+  //           location: "",
+  //           role: "",
+  //           phoneNo: "",
+  //           userId: "",
+  //           name: ""
+  //         }
+  //       });
+  //     } else {
+  //       const toastType = response.status >= 400 ? 'danger' : 'warning';
+  //       const messageData = response.status >= 400 ? data.error : data.message
+  //       // console.log('messageData', messageData);
+  //       toast.show(messageData, { type: toastType, placement: 'top' });
+  //       // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+  //     }
+  //     setLoading(false);
+  //   } catch (error) {
+  //     // toast.show(`Error: ${error.message}`, { type: 'danger', placement: 'top' });
+  //     console.log('error.message', error.message);
+  //     setLoading(false);
+  //   }
+  // }
 
-  const onCardClick = (item) => {
-    // console.log('onCardClick, item', item);
-    navigation.navigate('PaymentDetails', {
-      userEnteredData: {
-        ...item,
-        type: 'ticketDetailsPreview'
-      }
-    });
-  };
+  // const onCardClick = (item) => {
+  //   // console.log('onCardClick, item', item);
+  //   navigation.navigate('PaymentDetails', {
+  //     userEnteredData: {
+  //       ...item,
+  //       type: 'ticketDetailsPreview'
+  //     }
+  //   });
+  // };
+
+  // function isTicketExpired(expiryDate) {
+  //   if (!expiryDate) {
+  //     return true
+  //   }
+  //   const ticketExpiry = new Date(expiryDate);
+  //   // console.log("ticketExpiry", ticketExpiry);
+  //   const now = new Date();
+  //   // console.log("now", now);
+  //   // console.log("now > ticketExpiry;", now > ticketExpiry);
+  //   return now > ticketExpiry;
+  // }
+
 
 
   return (
@@ -305,11 +384,14 @@ export default function Home({ navigation }) {
 
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.subHeader}>
-            <Text style={styles.subHeaderText}>{t("Today's Collection")}</Text>
+            <Text style={styles.subdiscText}>{t("Site Name")}: {siteName}</Text>
           </View>
 
           <View style={styles.cardContainer}>
             <View style={styles.collectionCard}>
+              <View style={styles.subHeader}>
+                <Text style={styles.subHeaderText}>{t("Today's Collection")}</Text>
+              </View>
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/rupee.png')}
@@ -318,7 +400,6 @@ export default function Home({ navigation }) {
                 <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
                 <Text style={styles.cardAmount}>{assistantStats.cashCollection} {t("Rs")}</Text>
               </View>
-
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/credit-card.png')}
@@ -328,16 +409,15 @@ export default function Home({ navigation }) {
                 <Text style={styles.cardAmount}>{assistantStats.onlineCollection} {t("Rs")}</Text>
               </View>
               {/* <View style={styles.cardRow}>
-            <Image
-              source={require('../../utils/images/homeAssistant/punishment.png')}
-              style={styles.cardIcon}
-            />
-            <Text style={styles.cardTitle}>Fine</Text>
-            <Text style={styles.cardAmount}>200 {t("Rs")}</Text>
-          </View> */}
-
+                    <Image
+                      source={require('../../utils/images/homeAssistant/punishment.png')}
+                      style={styles.cardIcon}
+                    />
+                      <Text style={styles.cardTitle}>Fine</Text>
+                      <Text style={styles.cardAmount}>200 {t("Rs")}</Text>
+                    </View> 
+              */}
               <View style={styles.separator} />
-
               <View style={styles.cardRow}>
                 <Text style={styles.cardTitle}>{t("Total Payable")}</Text>
                 <Text style={styles.cardAmount}>{assistantStats.totalPayable} {t("Rs")}</Text>
@@ -350,8 +430,20 @@ export default function Home({ navigation }) {
           </View>
 
           <View style={styles.cardContainer}>
-            <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
+            <View style={[styles.BonusCard, styles.bonusContainer]}>
+              <View style={styles.cardRow}>
+                <Image
+                  source={require('../../../utils/images/homeAssistant/star.png')}
+                  style={styles.cardIcon}
+                />
+                <Text style={styles.cardTitle}>{t("Bonus")}</Text>
+                <Text style={styles.cardAmount}>{assistantStats.bonus} {t("Rs")}</Text>
+              </View>
+            </View>
+          </View>
 
+          <View style={styles.cardContainer}>
+            <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
               <TouchableOpacity onPress={() => setVehicleTypeView((prev) => !prev)} >
                 <View style={{ ...styles.cardRow, position: 'relative' }}>
                   <Image
@@ -382,10 +474,7 @@ export default function Home({ navigation }) {
                   </View>
                 </View>
               </TouchableOpacity>
-
-
               {isVehicleTypeView && <>
-
                 <View style={{ ...styles.separator, marginBottom: 10 }} />
                 {assistantStats?.vehicleTypes.length > 0 ? assistantStats?.vehicleTypes?.map((da, i) =>
                 (<View key={i} style={styles.cardRow}>
@@ -395,38 +484,87 @@ export default function Home({ navigation }) {
                 ) : <Text style={{ textAlign: 'center', color: '#fff', fontSize: 16 }}>{t("No tickets to show")}!</Text>
                 }
               </>}
-
             </View>
           </View>
+
 
           <View style={styles.cardContainer}>
-            <View style={[styles.BonusCard, styles.bonusContainer]}>
-              <View style={styles.cardRow}>
-                <Image
-                  source={require('../../../utils/images/homeAssistant/star.png')}
-                  style={styles.cardIcon}
-                />
-                <Text style={styles.cardTitle}>{t("Bonus")}</Text>
-                <Text style={styles.cardAmount}>{assistantStats.bonus} {t("Rs")}</Text>
-              </View>
+            <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
+              <TouchableOpacity onPress={() => setTotalCollectionView((prev) => !prev)} >
+                <View style={{ ...styles.cardRow, position: 'relative' }}>
+                  <Image
+                    source={require('../../../utils/images/homeAssistant/cashCollection2.png')}
+                    style={{ ...styles.cardIcon, marginRight: 10 }}
+                  />
+                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
+                    <View>
+
+                      <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{assistantLifeTimeStats.totalCollection} RS</Text>
+                      <Image
+                        source={require('../../../utils/images/homeAssistant/bottom-arrow.png')}
+                        style={{
+                          position: 'absolute',
+                          width: 20,
+                          height: 20,
+                          right: -5,
+                          top: 1,
+                          transform: [
+                            {
+                              rotate: isTotalCollectionView ? '180deg' : '0deg'
+                            }
+                          ]
+                        }}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+              {isTotalCollectionView && <>
+                <View style={{ ...styles.separator, marginBottom: 10 }} />
+                <View style={styles.cardRow}>
+                  <Image
+                    source={require('../../../utils/images/homeAssistant/rupee.png')}
+                    style={styles.cardIcon}
+                  />
+                  <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
+                  <Text style={styles.cardAmount}>{assistantLifeTimeStats.cashCollection} RS</Text>
+                </View>
+                <View style={styles.cardRow}>
+                  <Image
+                    source={require('../../../utils/images/homeAssistant/credit-card.png')}
+                    style={styles.cardIcon}
+                  />
+                  <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
+                  <Text style={styles.cardAmount}>{assistantLifeTimeStats.onlineCollection} RS</Text>
+                </View>
+                <View style={styles.cardRow}>
+                  <Image
+                    source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
+                    style={styles.cardIcon}
+                  />
+                  <Text style={styles.cardTitle}>{t("Reward")}</Text>
+                  <Text style={styles.cardAmount}>{assistantLifeTimeStats.reward} RS</Text>
+                </View>
+              </>}
             </View>
           </View>
-
 
           <TouchableOpacity disabled={isCreateTicket} onPress={handleCreateTicket} style={styles.button}>
             {isCreateTicket ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>{t("CREATE PARKING TICKET")}</Text>
+              <Text style={styles.buttonText}>{t("Create Parking Ticket")}</Text>
             )}
           </TouchableOpacity>
 
-
-
+          <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')} style={styles.button}>
+            <Text style={styles.buttonText}>{t("View All Parking Tickets")}</Text>
+          </TouchableOpacity>
 
 
           {/* recent parking tickets */}
-          <View style={styles.recentTicketsHeader}>
+          {/* <View style={styles.recentTicketsHeader}>
             <Text style={styles.recentTicketsTitle}>{t("Recent Parking Tickets")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')}>
               <Text style={styles.seeAllText}>{t("See All")}</Text>
@@ -437,22 +575,29 @@ export default function Home({ navigation }) {
           </View> : <>
             {
               recentTickets.map((item, i) => {
-                // console.log("isSettled", item?.settlementId?.isSettled);
+                // console.log('item', item);
+
                 return (
                   <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
                     <View key={item._id} style={styles.ticket}>
                       <View style={{ ...styles.settledBadge, ...(item?.status === 'settled' ? { backgroundColor: '#2ecc71' } : { backgroundColor: "#e74c3c" }) }}>
                         <Text style={{ color: '#ffffff' }}>{item?.status === 'settled' ? t("Settled") : t("Unsettled")}</Text>
                       </View>
+                      <View style={{ ...styles.expiredBadge, backgroundColor: "orange" }}>
+                        <Text style={{ color: '#ffffff' }}>{item.isPass ? t("Pass") : t("Ticket")}</Text>
+                      </View>
                       <View style={{ ...styles.ticketRow, marginTop: 10 }}>
-                        <Text style={styles.ticketText}>{t("Ticket")} #{i + 1}</Text>
-                        <Text style={styles.ticketText}>
-                          {moment.utc(item.createdAt).local().format('DD/MM/YY, h:mm A')}
+                        <Text style={styles.ticketText}>{t("Ticket")}: PNP24-0830-000{i + 1}</Text>
+                        <Text style={{ ...styles.ticketText, color: isTicketExpired(item?.ticketExpiry) ? 'red' : '#000' }}>
+                          {isTicketExpired(item?.ticketExpiry) ?
+                            t("Expired") :
+                            moment.utc(item.createdAt).local().format('DD/MM/YY, h:mm A')
+                          }
                         </Text>
                       </View>
                       <View style={styles.separator} />
                       <View style={styles.ticketRow}>
-                        <Text style={styles.ticketText}>{t("Vehicle No")} {item.vehicleNumber}</Text>
+                        <Text style={styles.ticketText}>{t("Veh No")}: {String(item.vehicleNumber).toLocaleUpperCase()}</Text>
                         <Text style={styles.ticketText}>{`${item.paymentMode} / ${item.amount}`}</Text>
                       </View>
                     </View>
@@ -461,15 +606,11 @@ export default function Home({ navigation }) {
                 )
               })
             }
-          </>}
+          </>} */}
           {/* end */}
-
-
-
 
         </ScrollView>
       }
-
 
     </View>
   );
@@ -488,10 +629,19 @@ const styles = StyleSheet.create({
     marginTop: -14
   },
   subHeaderText: {
-    fontSize: 26,
+    marginTop: 10,
+    fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
+    color: '#fff',
+  },
+  subdiscText: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#000',
+    textAlign: 'center',
+    fontWeight: '500',
+    marginTop: 10
   },
   cardContainer: {
     marginBottom: 6,
@@ -580,13 +730,24 @@ const styles = StyleSheet.create({
   settledBadge: {
     position: 'absolute',
     top: -1.2,
+    left: 175,
     width: 80,
     height: 23,
-    justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
-    borderBottomLeftRadius: 8,
+    // alignSelf: 'center',
+    borderBottomLeftRadius: 0,
     borderBottomRightRadius: 8
+  },
+  expiredBadge: {
+    position: 'absolute',
+    top: -1.2,
+    left: 90,
+    width: 80,
+    height: 23,
+    alignItems: 'center',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 0
   },
   ticketRow: {
     flexDirection: 'row',

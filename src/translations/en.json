@@ -133,6 +133,11 @@
         "Unsettled": "Unsettled",
         "Show QR": "Show QR",
         "Please enter a vehicle number with no more than 10 characters": "Please enter a vehicle number with no more than 10 characters",
-        "No tickets to show": "No tickets to show"
+        "No tickets to show": "No tickets to show",
+        "Clear": "Clear",
+        "Expired": "Expired",
+        "Veh No": "Veh No",
+        "Vehicle Type": "Vehicle Type",
+        "Pass": "Pass"
     }
 }

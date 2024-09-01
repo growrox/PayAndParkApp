@@ -12,6 +12,10 @@
  2) need to send x-client-source with non validated request (login and signup api)
  3) need to send a authorization > Bearer token with all the validated request
 
+ render url login phone no:
+ 1) for asssistant: 7738715012
+ 2) for supervisor: 8268195957
+
 
  **login jun-29 response**
  data of response....... {"message": "OTP validated successfully.", 
@@ -78,4 +82,34 @@ Todays task jul-25
     for to easy ==>     const { appLanguage } = useSelector(state => state.auth);
 2) need to show the account settlement tickets to the accountant
 3) change the language colour it's there but not visible
-   
+
+
+aug 30 task
+1) Add a reset search in assistant see all tickets section          done
+2) If 720 hours in time slot of assistant then need to show a all month pass        done
+3) if ispass= true on home assistnatn then need to show a pass else ticket.     done
+4) need to show vehicle type in a select time slot.         
+5) on ticketExpiry need to show expired else created at date and time and enhancement of the UI.        done
+6) need to add a all the things I have added on the home screen for recent parking tickets cards need to add in a see all page.         done
+
+aug 31 task
+1) in view all tickets need to add seel all ticket feature and have to remove recent parking tickets UI and implementation.         done
+2) Todays collection and site name info need to add inside below card according to the UI it suits.      done
+3) Need to add one more card called "Life time collection" with info in assistant like:         done
+    a) Total reward
+    b) total collection
+    c) total tickets
+4) all month pass click to change to normal time slot and have to send a time of 720.       done
+5) need to add "Life time collection" card in supervisor home.      done
+6) need to add a button called view parking assistant on supervisor and need to move all the home page assistant in different screen which will open on clicking view assistant button.     done
+7) need to add a search tickets search bar in supervisor to search all the global tickets.      done
+8) need to show one more card in supervisor home screen with these details:     done
+    a) total assistant
+    b) total online assistant
+    c) total offline assistant
+9) need to add 2 more fields in a existing card of supervisor:
+    a) online collection
+    b) todays collection
+
+        
+
