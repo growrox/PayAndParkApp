@@ -205,14 +205,13 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      // console.log('data.result.VehicleTypes.......', data.result.VehicleTypes);
-      console.log('data.result.......', data.result);
+      // console.log('data.result fetchAssistantLifeTimeStats.......', data.result);
 
       if (response.status === 200) {
-        const { totalCollection, totalReward, totalCashCollection, onlineCollection } = data.result
+        const { totalCollection, totalReward, cashCollection, onlineCollection } = data.result
         setAssistantLifeTimeStats({
           totalCollection: totalCollection || 0,
-          cashCollection: totalCashCollection || 0,
+          cashCollection: cashCollection || 0,
           onlineCollection: onlineCollection || 0,
           reward: totalReward,
         })
@@ -497,7 +496,7 @@ export default function Home({ navigation }) {
                     style={{ ...styles.cardIcon, marginRight: 10 }}
                   />
                   <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
+                    <Text style={styles.cardTitle}>{t("Life Time Collection")}</Text>
                     <View>
 
                       <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{assistantLifeTimeStats.totalCollection} RS</Text>

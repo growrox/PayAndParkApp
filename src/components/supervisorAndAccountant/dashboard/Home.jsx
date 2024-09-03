@@ -9,6 +9,8 @@ import { AUTH_LOG_OUT } from '../../../redux/types';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import SearchableTicketList from '../../assistant/dashboard/components/SearchableTicketList';
+import useKeyboardVisibility from '../../../utils/useKeyboardVisibility';
+import SiteDetailModal from './SiteDetailModal';
 
 function isTicketExpired(expiryDate) {
   if (!expiryDate) {
@@ -29,6 +31,8 @@ export default function Home({ navigation }) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [homePageStats, setHomePageStats] = useState({
+    todaysColection: '0',
+    onlineCollection: '0',
     cashCollection: '0',
     rewardPaid: '0',
     finePaid: '0',
@@ -49,7 +53,26 @@ export default function Home({ navigation }) {
     cashCollection: '',
     onlineCollection: '',
     reward: '',
+    totalFine: ''
   })
+  const [assistantCount, setAssistantCount] = useState({
+    totalAssistant: 0,
+    totalOnlineAssistant: 0,
+    totalOfflineAssistant: 0,
+  })
+  const isKeyboardVisible = useKeyboardVisibility();
+  const [sitesData, setSitesData] = useState({
+    totalTickets: 0,
+    sites: []
+  })
+  const [siteDetail, setSiteDetail] = useState({
+    siteId: '',
+    vehicleType: '',
+    tickets: '',
+    _id: ''
+  })
+  const [isSiteDetailModaOpen, setSiteDetailModalOpen] = useState(false)
+
 
   useEffect(() => {
     fetchHomeStats()
@@ -58,6 +81,8 @@ export default function Home({ navigation }) {
   useEffect(() => {
     if (role === 'supervisor') {
       fetchSuperVisorLifeTimeStats()
+      fetchTotalAssistant()
+      fetchSitesDetails()
     } else {
       fetchSuperVisors(pageNumber)
     }
@@ -112,7 +137,9 @@ export default function Home({ navigation }) {
             rewardPaid: data.result.TotalReward,
             finePaid: data.result.TotalFine,
             totalPayable: data.result.TotalCollectedAmount,
-            totalCollection: '0'
+            totalCollection: '0',
+            todaysColection: data.result.TodaysColection,
+            onlineCollection: data.result.OnlineCollection,
           })
         }
 
@@ -268,15 +295,16 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      // console.log('data.result fetchSuperVisorLifeTimeStats.......', data.result);
+      console.log('data.result fetchSuperVisorLifeTimeStats.......', data);
 
       if (response.status === 200) {
-        const { totalCollection, totalReward, totalCashCollection, onlineCollection } = data.result
+        const { totalCollection, totalReward, cashCollection, onlineCollection, totalFine } = data.result
         setSuperVisorLifeTimeStats({
           totalCollection: totalCollection || 0,
-          cashCollection: totalCashCollection || 0,
+          cashCollection: cashCollection || 0,
           onlineCollection: onlineCollection || 0,
           reward: totalReward,
+          totalFine
         })
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
@@ -298,11 +326,169 @@ export default function Home({ navigation }) {
       }
 
     } catch (error) {
-      console.log('Error occurred while parking-assistant/stats', error);
+      console.log('Error occurred while supervisor/lifetime-stats', error);
       toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
     } finally {
       setLoading(false)
       // console.log('trigger falsae');
+    }
+  }
+
+  const fetchTotalAssistant = async () => {
+
+    try {
+      const response = await fetch(`${url}/api/v1/supervisor/parkings-assistants/status/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': `${userId}`,
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
+        },
+
+      });
+
+      const data = await response.json();
+      console.log('data.result fetchTotalAssistant.......', data.result);
+
+      if (response.status === 200) {
+        const { totalCount, onlineCount, offlineCount } = data.result
+        setAssistantCount({
+          totalAssistant: totalCount || 0,
+          totalOnlineAssistant: onlineCount || 0,
+          totalOfflineAssistant: offlineCount || 0,
+        })
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            role: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+      }
+
+    } catch (error) {
+      console.log('Error occurred while parking-assistant/status', error);
+      toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setLoading(false)
+      // console.log('trigger falsae');
+    }
+  }
+
+  const fetchSitesDetails = async () => {
+
+    try {
+      const response = await fetch(`${url}/api/v1/site/supervisor/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': `${userId}`,
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
+        },
+
+      });
+
+      const data = await response.json();
+      console.log('data.result fetchSitesDetails.......', data);
+
+      if (response.status === 200) {
+        const { totalTickets, sites } = data.result
+        setSitesData({
+          totalTickets: totalTickets,
+          sites: sites
+        })
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            role: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+      }
+
+    } catch (error) {
+      console.log('Error occurred while site/supervisor', error);
+      toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setLoading(false)
+      // console.log('trigger falsae');
+    }
+  }
+
+  const handleSiteModalOpen = async (siteId) => {
+    setSiteDetailModalOpen(true)
+    try {
+      const response = await fetch(`${url}/api/v1/site/tickets-stats/${siteId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-client-source': 'app',
+          'userId': `${userId}`,
+          'Authorization': `Bearer ${token}`,
+          'client-language': appLanguage
+        },
+
+      });
+
+      const data = await response.json();
+      console.log('data.result handleSiteModalOpen.......', data);
+
+      if (response.status === 200) {
+        const { vehicleType, tickets, _id } = data.result
+        setSiteDetail(prev => {
+          return ({
+            ...prev,
+            vehicleType,
+            tickets,
+            _id
+          })
+        })
+      } else if (response.status === 401 || response.status === 406) {
+        dispatch({
+          type: AUTH_LOG_OUT,
+          payload: {
+            token: "",
+            location: "",
+            role: "",
+            phoneNo: "",
+            userId: "",
+            name: ""
+          }
+        });
+      } else {
+        const toastType = response.status >= 400 ? 'danger' : 'warning';
+        const messageData = response.status >= 400 ? data.error : data.message
+        toast.show(messageData, { type: toastType, placement: 'top' });
+        // console.log('response.status data.message  data.error', response.status, data.message, data.error)
+      }
+
+    } catch (error) {
+      console.log('Error occurred while site/tickets-stats', error);
+      toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
     }
   }
 
@@ -354,26 +540,18 @@ export default function Home({ navigation }) {
       {isLoading ? (
         <Spinner size={50} bottomMargin={20} />
       ) : (
-        <View style={styles.scrollContainer}>
+        <ScrollView style={{ ...styles.scrollContainer, ...(isKeyboardVisible ? { marginTop: -200 } : {}) }}>
           <View style={styles.cardContainer}>
             <View style={styles.collectionCard}>
               {role === 'supervisor' && (
                 <>
                   <View style={styles.cardRow}>
                     <Image
-                      source={require('../../../utils/images/homeAssistant/rupee.png')}
-                      style={styles.cardIcon}
-                    />
-                    <Text style={styles.cardTitle}>{t("Todays Collection")}</Text>
-                    <Text style={styles.cardAmount}>{homePageStats.cashCollection} {t("Rs")}</Text>
-                  </View>
-                  <View style={styles.cardRow}>
-                    <Image
-                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      source={require('../../../utils/images/homeAssistant/credit-card.png')}
                       style={styles.cardIcon}
                     />
                     <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
-                    <Text style={styles.cardAmount}>{homePageStats.cashCollection} {t("Rs")}</Text>
+                    <Text style={styles.cardAmount}>{homePageStats.onlineCollection} {t("Rs")}</Text>
                   </View>
                 </>
               )}
@@ -387,7 +565,7 @@ export default function Home({ navigation }) {
               </View>
               <View style={styles.cardRow}>
                 <Image
-                  source={require('../../../utils/images/homeAssistant/credit-card.png')}
+                  source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
                   style={styles.cardIcon}
                 />
                 <Text style={styles.cardTitle}>{role === 'accountant' ? t("Total Rewards") : t("Reward Paid")}</Text>
@@ -404,11 +582,83 @@ export default function Home({ navigation }) {
               {role === "supervisor" && <>
                 <View style={styles.separator} />
                 <View style={styles.cardRow}>
+                  {/* <Image
+                    source={require('../../../utils/images/homeAssistant/rupee.png')}
+                    style={styles.cardIcon}
+                  /> */}
+                  <Text style={styles.cardTitle}>{t("Todays Collection")}</Text>
+                  <Text style={styles.cardAmount}>{homePageStats.todaysColection} {t("Rs")}</Text>
+                </View>
+                <View style={styles.separator} />
+                <View style={styles.cardRow}>
                   <Text style={styles.cardTitle}>{t("Total Payable")}</Text>
                   <Text style={styles.cardAmount}>{homePageStats.totalPayable} {t("Rs")}</Text>
                 </View>
               </>}
             </View>
+
+            {role === "supervisor" &&
+              <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
+                <TouchableOpacity onPress={() => setTotalAssistantView((prev) => !prev)} >
+                  <View style={{ ...styles.cardRow, position: 'relative' }}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={{ ...styles.cardIcon, marginRight: 10 }}
+                    />
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={styles.cardTitle}>{t("Total Tickets")}</Text>
+                      <View>
+
+                        <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{assistantCount.totalAssistant}</Text>
+                        <Image
+                          source={require('../../../utils/images/homeAssistant/bottom-arrow.png')}
+                          style={{
+                            position: 'absolute',
+                            width: 20,
+                            height: 20,
+                            right: -5,
+                            top: 1,
+                            transform: [
+                              {
+                                rotate: isTotalAssistantView ? '180deg' : '0deg'
+                              }
+                            ]
+                          }}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                {isTotalAssistantView && <>
+                  <View style={{ ...styles.separator, marginBottom: 10 }} />
+
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>{t("Sites Names")}</Text>
+                  </View>
+
+                  {/* <TouchableOpacity onPress={() => handleSiteModalOpen("data._id")} >
+                    <View style={styles.cardRow}>
+                      <Text style={styles.countText}>{"index" + 1}</Text>
+                      <Text style={styles.cardTitle}>{"data.name"}</Text>
+                    </View>
+
+                  </TouchableOpacity> */}
+
+                  {sitesData.sites.length > 0 && sitesData.sites.map((data, index) => {
+                    return (
+                      <TouchableOpacity key={data._id} onPress={() => handleSiteModalOpen(data._id)} >
+                        <View style={styles.cardRow}>
+                          <Text style={styles.countText}>{index + 1}</Text>
+                          <Text style={styles.cardTitle}>{data.name}</Text>
+                        </View>
+
+                      </TouchableOpacity>
+                    )
+                  })}
+
+                </>}
+              </View>
+            }
 
             {role === "supervisor" &&
               <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
@@ -422,7 +672,7 @@ export default function Home({ navigation }) {
                       <Text style={styles.cardTitle}>{t("Total Assistant")}</Text>
                       <View>
 
-                        <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{superVisorLifeTimeStats.totalCollection} RS</Text>
+                        <Text style={{ ...styles.cardAmount, marginRight: 20 }}>{assistantCount.totalAssistant}</Text>
                         <Image
                           source={require('../../../utils/images/homeAssistant/bottom-arrow.png')}
                           style={{
@@ -446,27 +696,19 @@ export default function Home({ navigation }) {
                   <View style={{ ...styles.separator, marginBottom: 10 }} />
                   <View style={styles.cardRow}>
                     <Image
-                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      source={require('../../../utils/images/homeSupervisor/userWhite.png')}
                       style={styles.cardIcon}
                     />
                     <Text style={styles.cardTitle}>{t("Total Online Assistant")}</Text>
-                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.cashCollection} RS</Text>
+                    <Text style={styles.cardAmount}>{assistantCount.totalOnlineAssistant}</Text>
                   </View>
                   <View style={styles.cardRow}>
                     <Image
-                      source={require('../../../utils/images/homeAssistant/credit-card.png')}
+                      source={require('../../../utils/images/homeSupervisor/userWhite.png')}
                       style={styles.cardIcon}
                     />
                     <Text style={styles.cardTitle}>{t("Total Offline Assistant")}</Text>
-                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.onlineCollection} RS</Text>
-                  </View>
-                  <View style={styles.cardRow}>
-                    <Image
-                      source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
-                      style={styles.cardIcon}
-                    />
-                    <Text style={styles.cardTitle}>{t("Reward")}</Text>
-                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.reward} RS</Text>
+                    <Text style={styles.cardAmount}>{assistantCount.totalOfflineAssistant}</Text>
                   </View>
                 </>}
               </View>
@@ -530,6 +772,14 @@ export default function Home({ navigation }) {
                     <Text style={styles.cardTitle}>{t("Reward")}</Text>
                     <Text style={styles.cardAmount}>{superVisorLifeTimeStats.reward} RS</Text>
                   </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/punishment.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Fine")}</Text>
+                    <Text style={styles.cardAmount}>{superVisorLifeTimeStats.totalFine} {t("Rs")}</Text>
+                  </View>
                 </>}
               </View>
             }
@@ -538,12 +788,17 @@ export default function Home({ navigation }) {
               <Text style={styles.buttonText}>{t("View All Parking Assistants")}</Text>
             </TouchableOpacity>}
 
+            {role === 'supervisor' && <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')} style={styles.ViewAllAssistantbutton}>
+              <Text style={styles.buttonText}>{t("View All Parking Tickets")}</Text>
+            </TouchableOpacity>}
+
             {role === 'accountant' && <TouchableOpacity style={{ ...styles.button }} onPress={() => navigation.navigate('SettledTickets')}>
               <Text style={styles.buttonText}>{t("Your Settled Tickets")}</Text>
             </TouchableOpacity>}
+
             {role === 'accountant' ? <View style={styles.searchContainerChild}>
               <Image
-                source={require('../../../utils/images/search.png')} 
+                source={require('../../../utils/images/search.png')}
                 style={styles.searchLogo}
               />
               <TextInput
@@ -561,18 +816,7 @@ export default function Home({ navigation }) {
               </TouchableOpacity>} */}
             </View> : <></>}
 
-            {role === 'supervisor' ? <View style={{ margin: -14, marginTop: 6 }}>
-              <SearchableTicketList
-                endpoint={`${url}/api/v1/parking-assistant/tickets`}
-                navigation={navigation}
-                renderItem={renderTicket2}
-                headerText={t('Profile')}
-                noDataText={t("No ticket created yet")}
-                searchPlaceholder={t("Search")}
-                clearButtonText={t("Clear")}
-
-              />
-            </View> :
+            {role === 'supervisor' ? <></> :
 
               <>
                 {isLoadingAssistData ? (
@@ -599,8 +843,14 @@ export default function Home({ navigation }) {
             }
 
           </View>
-        </View>
+        </ScrollView>
       )}
+
+      <SiteDetailModal
+        isVisible={isSiteDetailModaOpen}
+        setVisible={setSiteDetailModalOpen}
+        siteDetail={siteDetail}
+      />
     </View>
   );
 }
@@ -636,10 +886,16 @@ const styles = StyleSheet.create({
     height: 24,
     marginRight: 24,
   },
+  countText: {
+    marginRight: 12,
+    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 20,
+  },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#fff',
     flex: 1,
   },
   separator: {

@@ -46,7 +46,7 @@ export default function SearchableTicketList({
                 });
 
                 const data = await response?.json();
-                console.log("datadsfsdfsdfsdfsddf", data);
+                console.log("datadsfsdfsdfsdfsddf", data?.result?.data);
 
 
                 if (response.status === 200) {

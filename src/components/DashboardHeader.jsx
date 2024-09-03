@@ -103,7 +103,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         backgroundColor: '#cacaca',
         borderBottomColor: '#abaaaa',
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        zIndex: 999
     },
     logo: {
         width: 90,

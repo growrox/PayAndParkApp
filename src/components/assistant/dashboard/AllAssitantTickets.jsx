@@ -4,6 +4,7 @@ import DashboardHeader from '../../DashboardHeader';
 import { useTranslation } from 'react-i18next';
 import SearchableTicketList from './components/SearchableTicketList';
 import { url } from '../../../utils/url';
+import moment from 'moment';
 
 function isTicketExpired(expiryDate) {
     if (!expiryDate) {

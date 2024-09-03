@@ -34,7 +34,8 @@ const PaymentDetails = ({ navigation, route }) => {
         remarks: '',
         name: '',
         isPass: '',
-        passId: ''
+        passId: '',
+        ticketExpiry: ''
     });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [isConfirmLoader, setConfirmLoader] = useState(false)
@@ -43,7 +44,10 @@ const PaymentDetails = ({ navigation, route }) => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        console.log("userEnteredData", userEnteredData);
+        // console.log("userEnteredData", userEnteredData);
+        // console.log("userEnteredData?.ticketExpiry", userEnteredData?.ticketExpiry);
+        // console.log("moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD HH:mm:ss')", moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD HH:mm:ss'));
+
         if (userEnteredData) {
             if (userEnteredData.type === 'ticketDetailsPreview') {
                 setDetails({
@@ -55,7 +59,8 @@ const PaymentDetails = ({ navigation, route }) => {
                     remarks: userEnteredData?.remarks || "",
                     name: userEnteredData.name || 'Pay And Park',
                     isPass: userEnteredData.isPass,
-                    passId: userEnteredData.passId
+                    passId: userEnteredData.passId,
+                    ticketExpiry: moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD hh:mm:ss A') || "NA"
                 });
             } else {
                 setDetails({
@@ -67,11 +72,17 @@ const PaymentDetails = ({ navigation, route }) => {
                     remarks: userEnteredData.remarks,
                     name: userEnteredData.name || 'Pay And Park',
                     isPass: userEnteredData.isPass,
-                    passId: userEnteredData.passId
+                    passId: userEnteredData.passId,
                 });
             }
         }
     }, [userEnteredData]);
+
+    useEffect(() => {
+        console.log('details', details);
+
+    }, [details])
+
 
     const initiatePayment = async () => {
         // console.log('url ', url, token);
@@ -236,7 +247,7 @@ const PaymentDetails = ({ navigation, route }) => {
                 name: details.name,
                 createdAtClient: moment().utcOffset("+05:30").format(),
                 address: userEnteredData.address,
-                isPass: details.isPass,
+                isPass: duration == 720 ? true : details.isPass,
                 ...(duration === 'All Month Pass' ? { passId: details.passId } : {})
             };
             console.log('apiData,,,hit ,,,,,,,,,,,,,,,', apiData);
@@ -252,6 +263,11 @@ const PaymentDetails = ({ navigation, route }) => {
                 },
                 body: JSON.stringify(apiData),
             });
+
+            // console.log("response of parking-tickets/tickets", response);
+            // console.log("status of parking-tickets/tickets", response.status);
+
+
 
             if (!response.ok) {
                 // console.log('res[posmne', response);
@@ -422,6 +438,15 @@ const PaymentDetails = ({ navigation, route }) => {
                     value={String(details.duration)}
                     editable={false}
                 />
+
+                {userEnteredData.type === 'ticketDetailsPreview' ? <>
+                    <Text style={styles.label}>{t("Expiry Date")}</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={String(details.ticketExpiry)}
+                        editable={false}
+                    />
+                </> : <></>}
 
                 {/* I am showing a remark section on 'Online' for temporarily as client dont have a online qr
                 setup that's why I am showing it on 'Online' once the qr is setup I will show it on 'Free'. */}

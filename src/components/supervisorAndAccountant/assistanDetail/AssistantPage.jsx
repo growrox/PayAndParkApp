@@ -183,7 +183,9 @@ export default function AssistantPage({ navigation, route }) {
         totalCollection: +assistantPageStats.totalCollection,
         totalCollectedAmount: +totalCollectedAmount,
         TotalFine: +assistantPageStats.finePaid || 0,
-        TotalRewards: +assistantPageStats.rewardPaid
+        TotalRewards: +assistantPageStats.rewardPaid,
+        cashCollection: +assistantPageStats.cashCollection,
+        onlineCollection:+assistantPageStats.onlineCollection
       }
       console.log("apiData................", apiData);
       const response = await fetch(`${url}/api/v1/supervisor/settle-tickets/${assistantData._id}`, {
