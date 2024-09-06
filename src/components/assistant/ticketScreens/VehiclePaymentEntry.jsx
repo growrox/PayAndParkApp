@@ -41,7 +41,7 @@ const requestLocationPermission = async () => {
 
 
 export default function VehiclePaymentEntry({ navigation, route }) {
-    const { selectedVehicle, selectedAmount, selectedTime } = route.params;
+    const { selectedVehicle, selectedAmount, selectedTime, selectedSlotID, selectedVehicleID } = route.params;
     const [vehicleNumber, setVehicleNumber] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [name, setName] = useState('');
@@ -79,6 +79,8 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
     useEffect(() => {
         // console.log("selectedVehicle, selectedAmount, selectedTime", selectedVehicle, selectedAmount, selectedTime);
+        // console.log("selectedSlotID, selectedVehicleID", selectedSlotID, selectedVehicleID);
+        
         getLocation()
     }, [])
 
@@ -222,7 +224,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
             isPass: selectedTime === 'All Month Pass' ? true : false
         };
 
-        navigation.navigate('PaymentDetails', { userEnteredData });
+        navigation.navigate('PaymentDetails', { userEnteredData, selectedSlotID, selectedVehicleID });
     };
 
     const handleRemoveImage = async () => {

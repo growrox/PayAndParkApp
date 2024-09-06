@@ -7,12 +7,13 @@ export default function TimeSlot({ navigation, route }) {
     const { selectedVehicle, vehicleName } = route.params;
     const { t } = useTranslation();
 
-    const handleCardPress = (slot, amount) => {
-        // console.log(`Selected time slot type: ${slot}`);
+    const handleCardPress = (slot, amount, slotID) => {
+        // console.log(`Selected time slot type: ${slot} sdsds ${selectedVehicle._id} opop ${slotID} `);
+        // return
         // if (slot === 'All Month Pass') {
         //     return
         // }
-        navigation.navigate('VehiclePaymentEntry', { selectedTime: slot, selectedAmount: amount, selectedVehicle: selectedVehicle.name })
+        navigation.navigate('VehiclePaymentEntry', { selectedTime: slot, selectedAmount: amount, selectedVehicle: selectedVehicle.name, selectedVehicleID: selectedVehicle._id, selectedSlotID: slotID })
     };
 
     return (
@@ -34,13 +35,13 @@ export default function TimeSlot({ navigation, route }) {
                                 {_d.hour == 720 ?
                                     <TouchableOpacity
                                         style={{ ...styles.collectionCard, justifyContent: 'center' }}
-                                        onPress={() => handleCardPress(_d.hour, _d.price)}
+                                        onPress={() => handleCardPress(_d.hour, _d.price, _d._id)}
                                     >
                                         <Text style={styles.cardTitle}>{t("All Month Pass")}</Text>
                                     </TouchableOpacity> :
                                     <TouchableOpacity
                                         style={styles.collectionCard}
-                                        onPress={() => handleCardPress(_d.hour, _d.price)}
+                                        onPress={() => handleCardPress(_d.hour, _d.price, _d._id)}
                                     >
                                         <Text style={styles.cardTitle}>{_d.hour} {t("Hours")}</Text>
                                         <Text style={styles.cardTitle}>{_d.price} {t("Rs")}</Text>

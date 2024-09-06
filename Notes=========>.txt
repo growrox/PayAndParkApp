@@ -133,13 +133,15 @@ Base Amount : 25
 sep 3 tasks:
 1) Need to shift a see all tickets in a new tab.    Done
 2) Need to call this "api/v1/site/supervisor/{userId}" api to get sites details then 
-first copy of "Total Assistant" to rename to "All Sites" and dropdown data will be as below:
+first copy of "Total Assistant" to rename to "All Sites" and dropdown data will be as below:    done
     a) name of the site only and it will be touchable on touch I will make a get request with by id of site to fetch a site details and need to show those details in a popup.
 
-3) need to send a vehicle type like of "2 wheeler" or "light vehicle" id in a create ticket payload and price id.
-4) Need to fix pass and settlement UI proper on all tickets.
+3) need to send a vehicle type like of "2 wheeler" or "light vehicle" id in a create ticket payload and price id.   done
+4) Need to fix pass and settlement UI proper on all tickets.    done
+
 
 on sep 4 by hitesh sir:-   @Hasan...🔥 your final 3 task 
+
 1) "Show Current Day Tickets total based on sites and  vehicle type to the
 supervisor in the app "
 2) "Show total Collection of that assitant in app, also show the history  

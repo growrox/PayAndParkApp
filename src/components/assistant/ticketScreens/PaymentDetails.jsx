@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import QRModal from './QRModal';
 
 const PaymentDetails = ({ navigation, route }) => {
-    const { userEnteredData } = route.params;
+    const { userEnteredData, selectedSlotID, selectedVehicleID } = route.params;
     const { token, userId, isTicketCreated, appLanguage } = useSelector(state => state.auth);
     const toast = useToast();
     const dispatch = useDispatch();
@@ -78,10 +78,11 @@ const PaymentDetails = ({ navigation, route }) => {
         }
     }, [userEnteredData]);
 
-    useEffect(() => {
-        console.log('details', details);
+    // useEffect(() => {
+    //     console.log('details', details);
+    //     console.log("selectedSlotID, selectedVehicleID----------->", selectedSlotID, selectedVehicleID);
 
-    }, [details])
+    // }, [details])
 
 
     const initiatePayment = async () => {
@@ -248,7 +249,9 @@ const PaymentDetails = ({ navigation, route }) => {
                 createdAtClient: moment().utcOffset("+05:30").format(),
                 address: userEnteredData.address,
                 isPass: duration == 720 ? true : details.isPass,
-                ...(duration === 'All Month Pass' ? { passId: details.passId } : {})
+                ...(duration === 'All Month Pass' ? { passId: details.passId } : {}),
+                vehicleID: selectedVehicleID,
+                priceID: selectedSlotID
             };
             console.log('apiData,,,hit ,,,,,,,,,,,,,,,', apiData);
 

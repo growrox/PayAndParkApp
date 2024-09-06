@@ -97,7 +97,7 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      // console.log('data of response.......', data);
+      // console.log('data of response get-all-vehicle-type .......', data);
 
       if (response.status === 200) {
         navigation.navigate('VehicleType', { vehicleTypes: data.result });

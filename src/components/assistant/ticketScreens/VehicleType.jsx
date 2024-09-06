@@ -9,6 +9,7 @@ export default function VehicleType({ navigation, route }) {
 
     const { vehicleTypes } = route.params;
 
+
     const handleCardPress = (data, name) => {
         // console.log(`Selected vehicle type: ${data}`);
         navigation.navigate('TimeSlot', { selectedVehicle: data, vehicleName: name })

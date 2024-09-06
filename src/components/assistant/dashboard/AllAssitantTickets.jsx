@@ -25,12 +25,27 @@ export default function AllAssitantTickets({ navigation }) {
     const renderTicket = ({ item, index }) => (
         <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
             <View key={item._id} style={styles.ticket}>
-                <View style={{ ...styles.settledBadge, ...(item?.status === 'settled' ? { backgroundColor: '#2ecc71' } : { backgroundColor: "#e74c3c" }) }}>
-                    <Text style={{ color: '#ffffff' }}>{item?.status === 'settled' ? t("Settled") : t("Unsettled")}</Text>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}>
+                    <View style={{
+                        ...styles.expiredBadge,
+                        backgroundColor: "orange",
+                        marginHorizontal: 4,
+                    }}>
+                        <Text style={{ color: '#ffffff' }}>{item.isPass ? t("Pass") : t("Ticket")}</Text>
+                    </View>
+                    <View style={{
+                        ...styles.settledBadge,
+                        ...(item?.status === 'settled' ? { backgroundColor: '#2ecc71' } : { backgroundColor: "#e74c3c" }),
+                        marginHorizontal: 4,
+                    }}>
+                        <Text style={{ color: '#ffffff' }}>{item?.status === 'settled' ? t("Settled") : t("Unsettled")}</Text>
+                    </View>
                 </View>
-                <View style={{ ...styles.expiredBadge, backgroundColor: "orange" }}>
-                    <Text style={{ color: '#ffffff' }}>{item.isPass ? t("Pass") : t("Ticket")}</Text>
-                </View>
+
                 <View style={{ ...styles.ticketRow, marginTop: 10 }}>
                     <Text style={styles.ticketText}>{t("Ticket")}: PNP24-0830-000{index + 1}</Text>
                     <Text style={{ ...styles.ticketText, color: isTicketExpired(item?.ticketExpiry) ? 'red' : '#000' }}>
@@ -48,6 +63,7 @@ export default function AllAssitantTickets({ navigation }) {
             </View>
         </TouchableOpacity>
     );
+
 
     const onCardClick = (item) => {
         navigation.navigate('PaymentDetails', {
@@ -124,27 +140,21 @@ const styles = StyleSheet.create({
     ticket: {
         backgroundColor: '#fff',
         borderRadius: 8,
-        padding: 16,
+        paddingRight: 16,
+        paddingBottom: 16,
+        paddingLeft: 16,
         marginBottom: 8,
         borderWidth: 1,
         borderColor: '#e0e0e0',
     },
     settledBadge: {
-        position: 'absolute',
-        top: -1.2,
-        left: 175,
         width: 80,
         height: 23,
-        // justifyContent: 'center',
         alignItems: 'center',
-        // alignSelf: 'center',
         borderBottomLeftRadius: 0,
         borderBottomRightRadius: 8
     },
     expiredBadge: {
-        position: 'absolute',
-        top: -1.2,
-        left: 90,
         width: 80,
         height: 23,
         alignItems: 'center',
