@@ -27,6 +27,7 @@ const PaymentDetails = ({ navigation, route }) => {
     const dispatch = useDispatch();
     const [details, setDetails] = useState({
         vehicleNumber: '',
+        vehicleType: '',
         phoneNumber: '',
         paymentMode: '',
         amount: '',
@@ -35,7 +36,8 @@ const PaymentDetails = ({ navigation, route }) => {
         name: '',
         isPass: '',
         passId: '',
-        ticketExpiry: ''
+        ticketExpiry: '',
+        ticketNo: ''
     });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [isConfirmLoader, setConfirmLoader] = useState(false)
@@ -49,26 +51,31 @@ const PaymentDetails = ({ navigation, route }) => {
         // console.log("moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD HH:mm:ss')", moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD HH:mm:ss'));
 
         if (userEnteredData) {
+            console.log("userEnteredData", userEnteredData);
+
             if (userEnteredData.type === 'ticketDetailsPreview') {
                 setDetails({
                     vehicleNumber: userEnteredData.vehicleNumber,
+                    vehicleType: userEnteredData.vehicleType,
                     phoneNumber: userEnteredData.phoneNumber,
                     paymentMode: userEnteredData.paymentMode,
                     amount: userEnteredData.amount,
-                    duration: userEnteredData.duration,
+                    duration: userEnteredData.duration == 720 ? '30 Days' : userEnteredData.duration,
                     remarks: userEnteredData?.remarks || "",
                     name: userEnteredData.name || 'Pay And Park',
                     isPass: userEnteredData.isPass,
                     passId: userEnteredData.passId,
-                    ticketExpiry: moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD hh:mm:ss A') || "NA"
+                    ticketExpiry: moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD hh:mm:ss A') || "NA",
+                    ticketNo: userEnteredData?.ticketRefId
                 });
             } else {
                 setDetails({
                     vehicleNumber: userEnteredData.vehicleNumber,
+                    vehicleType: userEnteredData.selectedVehicle,
                     phoneNumber: userEnteredData.phoneNumber,
                     paymentMode: userEnteredData.paymentMethod,
                     amount: userEnteredData.paymentMethod === 'Free' ? 0 : userEnteredData.selectedAmount,
-                    duration: userEnteredData.selectedTime,
+                    duration: userEnteredData.selectedTime == 720 ? '30 Days' : userEnteredData.selectedTime,
                     remarks: userEnteredData.remarks,
                     name: userEnteredData.name || 'Pay And Park',
                     isPass: userEnteredData.isPass,
@@ -400,12 +407,26 @@ const PaymentDetails = ({ navigation, route }) => {
                     </TouchableOpacity>
                 </View>}
                 <View style={styles.subHeader}>
-                    <Text style={styles.subHeaderText}>{t("Payment Details")}</Text>
+                    <Text style={styles.subHeaderText}>{userEnteredData.type === 'ticketDetailsPreview' ? t("Ticket Details") : t("Payment Details")}</Text>
                 </View>
-                <Text style={styles.label}>{t("Name")}</Text>
+                {userEnteredData.type === 'ticketDetailsPreview' ? <>
+                    <Text style={styles.label}>{t("Ticket No")}</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={details.ticketNo}
+                        editable={false}
+                    /> </>
+                    : <></>}
+                <Text style={styles.label}>{t("Customer Name")}</Text>
                 <TextInput
                     style={styles.input}
                     value={details.name}
+                    editable={false}
+                />
+                <Text style={styles.label}>{t("Vehicle Type")}</Text>
+                <TextInput
+                    style={styles.input}
+                    value={details.vehicleType}
                     editable={false}
                 />
                 <Text style={styles.label}>{t("Vehicle Number")}</Text>

@@ -10,6 +10,7 @@ import moment from 'moment';
 import { PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 import { useTranslation } from 'react-i18next';
 import { Picker } from '@react-native-picker/picker';
+import AssisTicketsByDate from './AssisTicketsByDate';
 
 
 export default function Home({ navigation }) {
@@ -30,6 +31,7 @@ export default function Home({ navigation }) {
     cashCollection: '',
     onlineCollection: '',
     reward: '',
+    fine: '',
   })
   const [isLoading, setLoading] = React.useState(true)
   const [isCreateTicket, setCreateTicket] = React.useState(false)
@@ -38,6 +40,7 @@ export default function Home({ navigation }) {
   const { t } = useTranslation();
   const [isVehicleTypeView, setVehicleTypeView] = React.useState(false);
   const [isTotalCollectionView, setTotalCollectionView] = React.useState(false);
+  const [isByDateModalVisible, setByDateModalVisible] = React.useState(false);
 
 
 
@@ -205,15 +208,16 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      // console.log('data.result fetchAssistantLifeTimeStats.......', data.result);
+      console.log('data.result fetchAssistantLifeTimeStats.......', data.result);
 
       if (response.status === 200) {
-        const { totalCollection, totalReward, cashCollection, onlineCollection } = data.result
+        const { totalCollection, totalReward, cashCollection, onlineCollection, totalFine } = data.result
         setAssistantLifeTimeStats({
           totalCollection: totalCollection || 0,
           cashCollection: cashCollection || 0,
           onlineCollection: onlineCollection || 0,
           reward: totalReward,
+          fine: totalFine
         })
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
@@ -545,6 +549,14 @@ export default function Home({ navigation }) {
                   <Text style={styles.cardTitle}>{t("Reward")}</Text>
                   <Text style={styles.cardAmount}>{assistantLifeTimeStats.reward} RS</Text>
                 </View>
+                <View style={styles.cardRow}>
+                  <Image
+                    source={require('../../../utils/images/homeAssistant/punishment.png')}
+                    style={styles.cardIcon}
+                  />
+                  <Text style={styles.cardTitle}>{t("Fine")}</Text>
+                  <Text style={styles.cardAmount}>{assistantLifeTimeStats.fine} RS</Text>
+                </View>
               </>}
             </View>
           </View>
@@ -559,6 +571,10 @@ export default function Home({ navigation }) {
 
           <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')} style={styles.button}>
             <Text style={styles.buttonText}>{t("View All Parking Tickets")}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setByDateModalVisible(true)} style={styles.button}>
+            <Text style={styles.buttonText}>{t("View Collection By Date")}</Text>
           </TouchableOpacity>
 
 
@@ -610,7 +626,10 @@ export default function Home({ navigation }) {
 
         </ScrollView>
       }
-
+      <AssisTicketsByDate
+        modalVisible={isByDateModalVisible}
+        setModalVisible={setByDateModalVisible}
+      />
     </View>
   );
 }

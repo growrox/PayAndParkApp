@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import SearchableTicketList from './components/SearchableTicketList';
 import { url } from '../../../utils/url';
 import moment from 'moment';
+import { useSelector } from 'react-redux';
 
 function isTicketExpired(expiryDate) {
     if (!expiryDate) {
@@ -21,9 +22,10 @@ function isTicketExpired(expiryDate) {
 
 export default function AllAssitantTickets({ navigation }) {
     const { t } = useTranslation();
+    const { role } = useSelector((state) => state.auth);
 
     const renderTicket = ({ item, index }) => (
-        <TouchableOpacity key={item._id} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
+        <TouchableOpacity key={`${item._id}${index}`} onPress={() => onCardClick(item)} style={styles.cardWrapper}>
             <View key={item._id} style={styles.ticket}>
                 <View style={{
                     flexDirection: 'row',
@@ -78,7 +80,7 @@ export default function AllAssitantTickets({ navigation }) {
         <View style={styles.container}>
             <DashboardHeader headerText={t('Profile')} secondaryHeaderText={'ASSISTANT'} />
             <View style={styles.container}>
-
+                {console.log("role", role)}
                 <SearchableTicketList
                     endpoint={`${url}/api/v1/parking-assistant/tickets`}
                     navigation={navigation}

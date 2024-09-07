@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableWithoutFeedback, ActivityIndicator, TouchableOpacity } from 'react-native';
 
 const SiteDetailModal = ({ isVisible, setVisible, siteDetail }) => {
     const handleBackgroundPress = () => {
         setVisible(false);
     };
-
+    useEffect(() => {
+            console.log("siteDetail", siteDetail);
+            
+    }, [siteDetail])
     return (
         <Modal
             transparent={true}

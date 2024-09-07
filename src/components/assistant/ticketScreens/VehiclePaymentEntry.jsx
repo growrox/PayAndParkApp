@@ -80,7 +80,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
     useEffect(() => {
         // console.log("selectedVehicle, selectedAmount, selectedTime", selectedVehicle, selectedAmount, selectedTime);
         // console.log("selectedSlotID, selectedVehicleID", selectedSlotID, selectedVehicleID);
-        
+
         getLocation()
     }, [])
 
@@ -144,6 +144,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
             if (response.status === 200) {
                 setRecentVehicleNumbers(data?.result || []);
+                (data?.message && !data?.result?.length) && toast.show(data?.message, { type: 'warning', placement: 'top' });
             } else if (response.status === 401 || response.status === 406) {
                 dispatch({
                     type: AUTH_LOG_OUT,
@@ -174,7 +175,7 @@ export default function VehiclePaymentEntry({ navigation, route }) {
 
 
     const handleSubmit = async () => {
-        if (!vehicleNumber || vehicleNumber.replace(/\s+/g, '').length > 10) {
+        if (!vehicleNumber || vehicleNumber.replace(/\s+/g, '').length !== 10) {
             toast.show(t('Please enter a vehicle number with no more than 10 characters'), { type: 'warning', placement: 'top' });
             return;
         }

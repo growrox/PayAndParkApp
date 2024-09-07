@@ -8,6 +8,7 @@ import { Spinner } from '../../../../utils/Spinner';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import debounce from 'lodash.debounce';
+import { url } from '../../../../utils/url';
 
 export default function SearchableTicketList({
     endpoint,
@@ -24,16 +25,22 @@ export default function SearchableTicketList({
     const [isFetchingMore, setFetchingMore] = useState(false);
     const [pageNumber, setPageNumber] = useState(1);
     const [isNoData, setNoData] = useState(false);
-    const { token, userId, appLanguage } = useSelector(state => state.auth);
+    const { token, userId, appLanguage, role } = useSelector(state => state.auth);
     const toast = useToast();
     const dispatch = useDispatch();
     const { t } = useTranslation();
 
     const fetchItems = useCallback(
         debounce(async (query, page) => {
+            if (!query && role === 'supervisor') {
+                setLoading(false);
+                return
+            }
             try {
                 let pageSize = 10;
-                const finalURL = `${endpoint}?page=${page}&pageSize=${pageSize}&searchQuery=${query}`;
+                console.log("endpoint", endpoint);
+                const globalEndPoint = `${url}/api/v1/parking-assistant/global/tickets`
+                const finalURL = `${query ? globalEndPoint : endpoint}?page=${page}&pageSize=${pageSize}&searchQuery=${query}`;
                 const response = await fetch(finalURL, {
                     method: 'GET',
                     headers: {

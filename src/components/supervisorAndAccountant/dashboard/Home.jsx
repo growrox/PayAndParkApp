@@ -37,7 +37,8 @@ export default function Home({ navigation }) {
     rewardPaid: '0',
     finePaid: '0',
     totalPayable: '0',
-    totalCollection: '0'
+    totalCollection: '0',
+    cashCollected: '0',
   });
   const [isFetchingMore, setFetchingMore] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -126,10 +127,13 @@ export default function Home({ navigation }) {
         if (role === 'accountant') {
           setHomePageStats({
             cashCollection: data.result.cashCollected,
+            onlineCollection: data?.result?.onlineCollection || 0,
             totalPayable: '0',
             rewardPaid: data.result.totalReward,
             finePaid: data.result.totalFine,
-            totalCollection: data.result.totalCollectedAmount
+            cashCollected: data?.result?.cashCollected || 0,
+            totalCollection: data.result.totalCollectedAmount,
+            todaysColection: data.result.todaysColection || 0,
           })
         } else {
           setHomePageStats({
@@ -403,7 +407,7 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('data.result fetchSitesDetails.......', data);
+      console.log('data.result fetchSitesDetails.......', data.result);
 
       if (response.status === 200) {
         const { totalTickets, sites } = data.result
@@ -455,10 +459,10 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('data.result handleSiteModalOpen.......', data);
+      console.log('data.result handleSiteModalOpen.......', data.result);
 
       if (response.status === 200) {
-        const { vehicleType, tickets, _id } = data.result
+        const { vehicleType, tickets, _id } = data?.result?.vehicleTypeCounts?.[0]
         setSiteDetail(prev => {
           return ({
             ...prev,
@@ -543,26 +547,39 @@ export default function Home({ navigation }) {
         <ScrollView style={{ ...styles.scrollContainer, ...(isKeyboardVisible ? { marginTop: -200 } : {}) }}>
           <View style={styles.cardContainer}>
             <View style={styles.collectionCard}>
-              {role === 'supervisor' && (
-                <>
-                  <View style={styles.cardRow}>
-                    <Image
-                      source={require('../../../utils/images/homeAssistant/credit-card.png')}
-                      style={styles.cardIcon}
-                    />
-                    <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
-                    <Text style={styles.cardAmount}>{homePageStats.onlineCollection} {t("Rs")}</Text>
-                  </View>
-                </>
-              )}
+
+              <View style={styles.cardRow}>
+                <Image
+                  source={require('../../../utils/images/homeAssistant/credit-card.png')}
+                  style={styles.cardIcon}
+                />
+                <Text style={styles.cardTitle}>{t("Online Collection")}</Text>
+                <Text style={styles.cardAmount}>{homePageStats.onlineCollection} {t("Rs")}</Text>
+              </View>
+
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeAssistant/rupee.png')}
                   style={styles.cardIcon}
                 />
-                <Text style={styles.cardTitle}>{role === 'accountant' ? t("Cash Collected") : t("Cash Collection")}</Text>
+                <Text style={styles.cardTitle}>{t("Cash Collection")}</Text>
                 <Text style={styles.cardAmount}>{homePageStats.cashCollection} {t("Rs")}</Text>
               </View>
+
+              {role === "accountant" ?
+                <>
+                  <View style={{ ...styles.separator, marginBottom: 10 }} />
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Cash Collected")}</Text>
+                    <Text style={styles.cardAmount}>{homePageStats.cashCollected} {t("Rs")}</Text>
+                  </View>
+
+                </> : <></>}
+
               <View style={styles.cardRow}>
                 <Image
                   source={require('../../../utils/images/homeSupervisor/assistantPage/money.png')}
@@ -579,6 +596,30 @@ export default function Home({ navigation }) {
                 <Text style={styles.cardTitle}>{role === 'accountant' ? t("Total Fine") : t("Fine Paid")}</Text>
                 <Text style={styles.cardAmount}>{homePageStats.finePaid} {t("Rs")}</Text>
               </View>
+
+              {role === "accountant" ?
+                <>
+                  <View style={{ ...styles.separator, marginBottom: 10 }} />
+
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Todays Collection")}</Text>
+                    <Text style={styles.cardAmount}>{homePageStats.todaysColection} {t("Rs")}</Text>
+                  </View>
+                  <View style={styles.cardRow}>
+                    <Image
+                      source={require('../../../utils/images/homeAssistant/rupee.png')}
+                      style={styles.cardIcon}
+                    />
+                    <Text style={styles.cardTitle}>{t("Total Collection")}</Text>
+                    <Text style={styles.cardAmount}>{homePageStats.totalCollection} {t("Rs")}</Text>
+                  </View></> :
+                <></>
+              }
+
               {role === "supervisor" && <>
                 <View style={styles.separator} />
                 <View style={styles.cardRow}>
@@ -632,9 +673,9 @@ export default function Home({ navigation }) {
                 {isTotalAssistantView && <>
                   <View style={{ ...styles.separator, marginBottom: 10 }} />
 
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
+                  {/* <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#fff' }}>{t("Sites Names")}</Text>
-                  </View>
+                  </View> */}
 
                   {/* <TouchableOpacity onPress={() => handleSiteModalOpen("data._id")} >
                     <View style={styles.cardRow}>
@@ -644,12 +685,14 @@ export default function Home({ navigation }) {
 
                   </TouchableOpacity> */}
 
-                  {sitesData.sites.length > 0 && sitesData.sites.map((data, index) => {
+                  {sitesData?.sites?.length > 0 && sitesData?.sites?.map((data, index) => {
                     return (
                       <TouchableOpacity key={data._id} onPress={() => handleSiteModalOpen(data._id)} >
                         <View style={styles.cardRow}>
                           <Text style={styles.countText}>{index + 1}</Text>
                           <Text style={styles.cardTitle}>{data.name}</Text>
+                          <Text style={styles.cardAmount}>{data?.totalCount || 0}</Text>
+
                         </View>
 
                       </TouchableOpacity>
@@ -785,11 +828,11 @@ export default function Home({ navigation }) {
             }
 
             {role === 'supervisor' && <TouchableOpacity onPress={() => navigation.navigate('AllParkingAssistant')} style={styles.ViewAllAssistantbutton}>
-              <Text style={styles.buttonText}>{t("View All Parking Assistants")}</Text>
+              <Text style={styles.buttonText}>{t("Settle Parking Assistants")}</Text>
             </TouchableOpacity>}
 
             {role === 'supervisor' && <TouchableOpacity onPress={() => navigation.navigate('AllAssitantTickets')} style={styles.ViewAllAssistantbutton}>
-              <Text style={styles.buttonText}>{t("View All Parking Tickets")}</Text>
+              <Text style={styles.buttonText}>{t("Search Parking Tickets")}</Text>
             </TouchableOpacity>}
 
             {role === 'accountant' && <TouchableOpacity style={{ ...styles.button }} onPress={() => navigation.navigate('SettledTickets')}>
