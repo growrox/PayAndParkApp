@@ -49,6 +49,9 @@ export default function Home({ navigation }) {
   const searchTimer = useRef(null);
   const [isTotalCollectionView, setTotalCollectionView] = React.useState(false);
   const [isTotalAssistantView, setTotalAssistantView] = React.useState(false);
+  const [isTotalTicketView, setTotalTicketView] = React.useState(false);
+  const [isSiteClickLoading, setSiteClickLoading] = useState(false)
+
   const [superVisorLifeTimeStats, setSuperVisorLifeTimeStats] = React.useState({
     totalCollection: 0,
     cashCollection: '',
@@ -66,12 +69,7 @@ export default function Home({ navigation }) {
     totalTickets: 0,
     sites: []
   })
-  const [siteDetail, setSiteDetail] = useState({
-    siteId: '',
-    vehicleType: '',
-    tickets: '',
-    _id: ''
-  })
+  const [siteDetail, setSiteDetail] = useState([])
   const [isSiteDetailModaOpen, setSiteDetailModalOpen] = useState(false)
 
 
@@ -133,7 +131,7 @@ export default function Home({ navigation }) {
             finePaid: data.result.totalFine,
             cashCollected: data?.result?.cashCollected || 0,
             totalCollection: data.result.totalCollectedAmount,
-            todaysColection: data.result.todaysColection || 0,
+            todaysColection: data.result.todaysCollection || 0,
           })
         } else {
           setHomePageStats({
@@ -444,6 +442,7 @@ export default function Home({ navigation }) {
   }
 
   const handleSiteModalOpen = async (siteId) => {
+    setSiteClickLoading(true)
     setSiteDetailModalOpen(true)
     try {
       const response = await fetch(`${url}/api/v1/site/tickets-stats/${siteId}`, {
@@ -462,15 +461,8 @@ export default function Home({ navigation }) {
       console.log('data.result handleSiteModalOpen.......', data.result);
 
       if (response.status === 200) {
-        const { vehicleType, tickets, _id } = data?.result?.vehicleTypeCounts?.[0]
-        setSiteDetail(prev => {
-          return ({
-            ...prev,
-            vehicleType,
-            tickets,
-            _id
-          })
-        })
+        const siteVehicleResponseData = data?.result?.vehicleTypeCounts || [];
+        setSiteDetail(data?.result?.vehicleTypeCounts)
       } else if (response.status === 401 || response.status === 406) {
         dispatch({
           type: AUTH_LOG_OUT,
@@ -493,6 +485,8 @@ export default function Home({ navigation }) {
     } catch (error) {
       console.log('Error occurred while site/tickets-stats', error);
       toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
+    } finally{
+      setSiteClickLoading(false)
     }
   }
 
@@ -640,7 +634,7 @@ export default function Home({ navigation }) {
 
             {role === "supervisor" &&
               <View style={{ ...styles.collectionCard, paddingTop: 15, paddingBottom: 10 }}>
-                <TouchableOpacity onPress={() => setTotalAssistantView((prev) => !prev)} >
+                <TouchableOpacity onPress={() => setTotalTicketView((prev) => !prev)} >
                   <View style={{ ...styles.cardRow, position: 'relative' }}>
                     <Image
                       source={require('../../../utils/images/homeAssistant/rupee.png')}
@@ -661,7 +655,7 @@ export default function Home({ navigation }) {
                             top: 1,
                             transform: [
                               {
-                                rotate: isTotalAssistantView ? '180deg' : '0deg'
+                                rotate: isTotalTicketView ? '180deg' : '0deg'
                               }
                             ]
                           }}
@@ -670,7 +664,7 @@ export default function Home({ navigation }) {
                     </View>
                   </View>
                 </TouchableOpacity>
-                {isTotalAssistantView && <>
+                {isTotalTicketView && <>
                   <View style={{ ...styles.separator, marginBottom: 10 }} />
 
                   {/* <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginBottom: 4 }}>
@@ -691,7 +685,7 @@ export default function Home({ navigation }) {
                         <View style={styles.cardRow}>
                           <Text style={styles.countText}>{index + 1}</Text>
                           <Text style={styles.cardTitle}>{data.name}</Text>
-                          <Text style={styles.cardAmount}>{data?.totalCount || 0}</Text>
+                          <Text style={styles.cardAmount}>Tickets: {data?.totalCount || 0}</Text>
 
                         </View>
 
@@ -893,6 +887,8 @@ export default function Home({ navigation }) {
         isVisible={isSiteDetailModaOpen}
         setVisible={setSiteDetailModalOpen}
         siteDetail={siteDetail}
+        setSiteDetail={setSiteDetail}
+        isSiteClickLoading={isSiteClickLoading}
       />
     </View>
   );

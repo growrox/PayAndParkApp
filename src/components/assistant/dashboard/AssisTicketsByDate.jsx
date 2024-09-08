@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { AUTH_LOG_OUT } from '../../../redux/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useToast } from 'react-native-toast-notifications';
@@ -14,11 +14,12 @@ const AssisTicketsByDate = ({ modalVisible, setModalVisible }) => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [data, setData] = useState(null);
   const toast = useToast();
+  const [isLoading, setLoading] = useState(false);
 
   const fetchDataByDate = async (date) => {
     // console.log("date", new Date(date).toLocaleDateString());
     console.log("date", moment(new Date(date)).format('YYYY-MM-DD'));
-
+    setLoading(true)
     setData(null);
     try {
       const response = await fetch(`${url}/api/v1/parking-assistant/settlement/${userId}?date=${moment(new Date(date)).format('YYYY-MM-DD')}`, {
@@ -33,7 +34,7 @@ const AssisTicketsByDate = ({ modalVisible, setModalVisible }) => {
       });
 
       const data = await response.json();
-      console.log('data.result fetchSuperVisorLifeTimeStats.......', data);
+      console.log('data.result fetchDataByDate.......', data);
       console.log("response.status", response.status);
 
 
@@ -60,6 +61,8 @@ const AssisTicketsByDate = ({ modalVisible, setModalVisible }) => {
     } catch (error) {
       console.log('Error occurred while supervisor/lifetime-stats', error);
       toast.show(`Error: ${error?.message}`, { type: 'danger', placement: 'top' });
+    } finally {
+      setLoading(false)
     }
   };
 
@@ -87,34 +90,36 @@ const AssisTicketsByDate = ({ modalVisible, setModalVisible }) => {
                 style={styles.datePicker}
               />
 
+              {isLoading ? <ActivityIndicator size="large" color="#007BFF" /> : <>
+                {data ? (
+                  <>
+                    <View style={styles.row}>
+                      <Text style={styles.label}>Total Cash:</Text>
+                      <Text style={styles.value}>{data?.cashCollection}</Text>
+                    </View>
+                    <View style={styles.row}>
+                      <Text style={styles.label}>Total Online:</Text>
+                      <Text style={styles.value}>{data?.onlineCollection}</Text>
+                    </View>
+                    <View style={styles.row}>
+                      <Text style={styles.label}>Total Reward:</Text>
+                      <Text style={styles.value}>{data?.totalReward}</Text>
+                    </View>
+                    <View style={styles.row}>
+                      <Text style={styles.label}>Total Fine:</Text>
+                      <Text style={styles.value}>{data?.totalFine}</Text>
+                    </View>
+                    <View style={styles.separator} />
+                    <View style={styles.row}>
+                      <Text style={styles.label}>Total Collection:</Text>
+                      <Text style={styles.value}>{data?.totalCollection}</Text>
+                    </View>
+                  </>
+                ) : (
+                  <Text style={styles.noDataText}>No data available</Text>
+                )}
+              </>}
 
-              {data ? (
-                <>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Total Cash:</Text>
-                    <Text style={styles.value}>{data?.cashCollection}</Text>
-                  </View>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Total Online:</Text>
-                    <Text style={styles.value}>{data?.onlineCollection}</Text>
-                  </View>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Total Reward:</Text>
-                    <Text style={styles.value}>{data?.totalReward}</Text>
-                  </View>
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Total Fine:</Text>
-                    <Text style={styles.value}>{data?.totalFine}</Text>
-                  </View>
-                  <View style={styles.separator} />
-                  <View style={styles.row}>
-                    <Text style={styles.label}>Total Collection:</Text>
-                    <Text style={styles.value}>{data?.totalCollection}</Text>
-                  </View>
-                </>
-              ) : (
-                <Text style={styles.noDataText}>No data available</Text>
-              )}
               <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                 <Text style={styles.closeButtonText}>Close</Text>
               </TouchableOpacity>
