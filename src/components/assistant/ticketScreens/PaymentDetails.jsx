@@ -255,12 +255,16 @@ const PaymentDetails = ({ navigation, route }) => {
                 name: details.name,
                 createdAtClient: moment().utcOffset("+05:30").format(),
                 address: userEnteredData.address,
-                isPass: duration == 720 ? true : details.isPass,
+                isPass: duration === "30 Days" ? true : details.isPass,
                 ...(duration === 'All Month Pass' ? { passId: details.passId } : {}),
                 vehicleID: selectedVehicleID,
                 priceID: selectedSlotID
             };
-            console.log('apiData,,,hit ,,,,,,,,,,,,,,,', apiData);
+            console.log(`userId  ${userId}  url ${url}  token   ${token}   appLanguage    ${appLanguage}`);
+            console.log('apiData,,,hit ,,,,,,,,,,,,,,,', JSON.stringify(apiData));
+            
+
+            // return;
 
             const response = await fetch(`${url}/api/v1/parking-tickets/tickets`, {
                 method: 'POST',
@@ -276,8 +280,6 @@ const PaymentDetails = ({ navigation, route }) => {
 
             // console.log("response of parking-tickets/tickets", response);
             // console.log("status of parking-tickets/tickets", response.status);
-
-
 
             if (!response.ok) {
                 // console.log('res[posmne', response);
