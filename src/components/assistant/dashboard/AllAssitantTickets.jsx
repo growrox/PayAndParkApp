@@ -49,7 +49,7 @@ export default function AllAssitantTickets({ navigation }) {
                 </View>
 
                 <View style={{ ...styles.ticketRow, marginTop: 10 }}>
-                    <Text style={styles.ticketText}>{t("Ticket")}: PNP24-0830-000{index + 1}</Text>
+                    <Text style={styles.ticketText}>{t("Ticket")}: {item?.ticketRefId}</Text>
                     <Text style={{ ...styles.ticketText, color: isTicketExpired(item?.ticketExpiry) ? 'red' : '#000' }}>
                         {isTicketExpired(item?.ticketExpiry) ?
                             t("Expired") :
@@ -80,7 +80,6 @@ export default function AllAssitantTickets({ navigation }) {
         <View style={styles.container}>
             <DashboardHeader headerText={t('Profile')} secondaryHeaderText={'ASSISTANT'} />
             <View style={styles.container}>
-                {console.log("role", role)}
                 <SearchableTicketList
                     endpoint={`${url}/api/v1/parking-assistant/tickets`}
                     navigation={navigation}

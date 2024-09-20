@@ -18,7 +18,7 @@ const Login = () => {
   const [isLoginClicked, setLoginClicked] = useState(false)
 
   const handleSignInPress = useCallback(async () => {
-    if (phoneNo.length < 3) {
+    if (phoneNo.length < 10) {
       return toast.show(t("Please enter a valid phone number"), { type: 'danger', placement: 'top' });
     }
     setLoginClicked(true)

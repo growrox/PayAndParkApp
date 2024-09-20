@@ -30,14 +30,22 @@ export default function TimeSlot({ navigation, route }) {
 
                 <View style={styles.cardContainer}>
                     {selectedVehicle.hourlyPrices.map((_d, i) => {
+                        // console.log("_d----->", _d);
+
                         return (
                             <React.Fragment key={_d._id}>
                                 {_d.hour == 720 ?
                                     <TouchableOpacity
-                                        style={{ ...styles.collectionCard, justifyContent: 'center' }}
+                                        style={{ ...styles.collectionCard,
+                                            paddingLeft:4
+                                            //  justifyContent: 'center'
+                                             }}
                                         onPress={() => handleCardPress(_d.hour, _d.price, _d._id)}
                                     >
-                                        <Text style={styles.cardTitle}>{t("All Month Pass")}</Text>
+                                        {/* <Text style={styles.cardTitle}>{t("All Month Pass")}</Text> */}
+                                        <Text style={styles.cardTitle}> {t("Monthly Pass")}</Text>
+                                        <Text style={styles.cardTitle}>{_d.price} {t("Rs")}</Text>
+
                                     </TouchableOpacity> :
                                     <TouchableOpacity
                                         style={styles.collectionCard}

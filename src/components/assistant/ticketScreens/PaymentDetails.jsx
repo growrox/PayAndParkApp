@@ -65,7 +65,7 @@ const PaymentDetails = ({ navigation, route }) => {
                     name: userEnteredData.name || 'Pay And Park',
                     isPass: userEnteredData.isPass,
                     passId: userEnteredData.passId,
-                    ticketExpiry: moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD hh:mm:ss A') || "NA",
+                    ticketExpiry: userEnteredData.isPass ? moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD') : moment(userEnteredData?.ticketExpiry).format('YYYY-MM-DD hh:mm:ss A') || "NA",
                     ticketNo: userEnteredData?.ticketRefId
                 });
             } else {
@@ -262,7 +262,7 @@ const PaymentDetails = ({ navigation, route }) => {
             };
             console.log(`userId  ${userId}  url ${url}  token   ${token}   appLanguage    ${appLanguage}`);
             console.log('apiData,,,hit ,,,,,,,,,,,,,,,', JSON.stringify(apiData));
-            
+
 
             // return;
 
@@ -510,6 +510,18 @@ const PaymentDetails = ({ navigation, route }) => {
                     </>
                 }
 
+                {userEnteredData.type === 'ticketDetailsPreview' ? (
+                    <Text style={styles.noteParent}>
+                        Note:
+                        <Text style={styles.noteChild}>
+                            {' '}
+                            Park your vehicle at your own risk. The company and MBMC are not responsible for any loss, theft, or damage to your vehicle.
+                        </Text>
+                    </Text>
+                ) : null}
+
+
+
 
                 {/* Success Modal */}
                 <SuccessModal isVisible={showSuccessModal} onClose={() => setShowSuccessModal(false)} />
@@ -585,6 +597,16 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold'
+    },
+    noteParent: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        color: '#d9534f',
+        fontSize: 14,
+        marginBottom: 10
+    },
+    noteChild: {
+        fontWeight: 'normal'
     }
 });
 

@@ -100,7 +100,7 @@ export default function Home({ navigation }) {
       });
 
       const data = await response.json();
-      // console.log('data of response get-all-vehicle-type .......', data);
+      // console.log('data of response get-all-vehicle-type .......', data.result[0].hourlyPrices);
 
       if (response.status === 200) {
         navigation.navigate('VehicleType', { vehicleTypes: data.result });
